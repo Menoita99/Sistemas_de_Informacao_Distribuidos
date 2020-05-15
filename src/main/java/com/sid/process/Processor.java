@@ -51,26 +51,18 @@ public class Processor {
 	 * 
 	 */
 	public void Process() {
-		System.out.println("Running");
 		Random r = new Random();
 		while(true) {
-			/*
-			 *Isto é apenas para testar o Performance Monitor Depois é para apagar 
-			 */
+			 //Isto é apenas para testar o Performance Monitor Depois é para apagar 
 			try {
-				Thread.sleep(2000);
-				//{"tmp":"52","hum":"52.00","dat":"19/04/2020","tim":"09:54:58","cell":"228","mov":"1",”sens":"eth"}
-				Map<String, Object> m = Map.of("tmp",r.nextInt(20)+10,
-												"hum",r.nextInt(50)+10,
-												"dat","15/05/2020",
-												"tim",LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")),
-												"cell",r.nextInt(200)+10,
-												"mov",r.nextBoolean() ? 1 : 0,
-												"sens","tst");
+				Thread.sleep(1000);
+				Map<String, Object> m = Map.of("tmp",r.nextInt(20)+10, "hum",r.nextInt(50)+10, "dat","15/05/2020",
+												"tim",LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")), 
+												"cell",r.nextInt(200)+10, "mov",r.nextBoolean() ? 1 : 0, "sens","tst");
 				measures.add(new Measure(new JSONObject(m)));
-				if(measures.size() >= 3)
+				if(measures.size() >= 10)
 					measures.clear();
-				System.out.println(measures.size());
+
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -88,5 +80,13 @@ public class Processor {
 		if(INSTANCE == null)
 			INSTANCE = new Processor();
 		return INSTANCE;
+	}
+
+
+
+
+
+	public void close() {
+		System.exit(0);
 	}
 }

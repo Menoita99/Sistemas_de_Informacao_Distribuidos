@@ -33,7 +33,7 @@ public class PerformanceMonitor extends Application implements Initializable{
 	@FXML private ListView<?> alarmList;
 	@FXML private ProgressBar progressBar;
 
-	private static int MAX_ELEMS = 30; 
+	private static int MAX_ELEMS = 20; 
 
 	XYChart.Series<String,Number> temSerie = new XYChart.Series<>();
 	XYChart.Series<String,Number> humSerie = new XYChart.Series<>();
@@ -54,8 +54,8 @@ public class PerformanceMonitor extends Application implements Initializable{
 		yAxis.setAnimated(false);
 
 		temSerie.setName("Temperature");
-		humSerie.setName("humidity");
-		lumSerie.setName("luminosity");
+		humSerie.setName("Humidity");
+		lumSerie.setName("Luminosity");
 
 		chart.getData().add(temSerie);
 		chart.getData().add(lumSerie);
@@ -78,7 +78,6 @@ public class PerformanceMonitor extends Application implements Initializable{
 					Measure measure = c.getAddedSubList().get(0);
 
 					Platform.runLater(() -> {
-
 						List<Measure> list = new ArrayList<>();
 						if(c.getFrom() < c.getList().size()) 
 							list = (List<Measure>) c.getAddedSubList();
@@ -113,6 +112,7 @@ public class PerformanceMonitor extends Application implements Initializable{
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("scene.fxml"));	
 		Parent root = loader.load();
 
+		window.setOnCloseRequest((event) -> {Platform.exit(); processor.close();});
 		window.setTitle("Monitor");
 		window.setScene(new Scene(root));
 		window.show();
