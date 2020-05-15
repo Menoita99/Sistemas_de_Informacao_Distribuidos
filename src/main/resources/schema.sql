@@ -1,4 +1,3 @@
---CREATE DATABASE  IF NOT EXISTS `sid_2` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `sid_2`;
 -- MySQL dump 10.13  Distrib 8.0.18, for Win64 (x86_64)
 --
@@ -55,9 +54,9 @@ DROP TABLE IF EXISTS `diasemana`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `diasemana` (
-  `DiaHora` varchar(20) NOT NULL,
-  `HoraRonda` time NOT NULL,
-  PRIMARY KEY (`DiaHora`,`HoraRonda`)
+  `DiaSemana` varchar(20) NOT NULL,
+  `HoraRonda` varchar(20) NOT NULL,
+  PRIMARY KEY (`DiaSemana`,`HoraRonda`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -119,6 +118,35 @@ LOCK TABLES `ronda_extra` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `ronda_planeada`
+--
+
+DROP TABLE IF EXISTS `ronda_planeada`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ronda_planeada` (
+  `EmailUtilizador` varchar(300) NOT NULL,
+  `DiaSemana` varchar(20) NOT NULL,
+  `HoraRonda` varchar(20) NOT NULL,
+  PRIMARY KEY (`EmailUtilizador`,`DiaSemana`,`HoraRonda`),
+  KEY `FK_DIA_SEMANA_idx` (`DiaSemana`),
+  KEY `Fk_HORA_RONDA_idx` (`HoraRonda`),
+  KEY `FK_EMAIL_UTILIZADOR_idx` (`EmailUtilizador`),
+  CONSTRAINT `FK_DIA_SEMANA` FOREIGN KEY (`DiaSemana`) REFERENCES `diasemana` (`DiaSemana`),
+  CONSTRAINT `FK_EMAIL_UTILIZADOR` FOREIGN KEY (`EmailUtilizador`) REFERENCES `utilizador` (`EmailUtilizador`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ronda_planeada`
+--
+
+LOCK TABLES `ronda_planeada` WRITE;
+/*!40000 ALTER TABLE `ronda_planeada` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ronda_planeada` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sistema`
 --
 
@@ -138,7 +166,7 @@ CREATE TABLE `sistema` (
 
 LOCK TABLES `sistema` WRITE;
 /*!40000 ALTER TABLE `sistema` DISABLE KEYS */;
-INSERT INTO `sistema` VALUES (30.00,50.00,500.00);
+INSERT INTO `sistema` VALUES (50.00,30.00,20.00);
 /*!40000 ALTER TABLE `sistema` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -177,4 +205,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-14 14:50:33
+-- Dump completed on 2020-05-15 23:30:52
