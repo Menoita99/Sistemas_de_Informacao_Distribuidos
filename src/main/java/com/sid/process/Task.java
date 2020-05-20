@@ -1,10 +1,24 @@
 package com.sid.process;
 
+import com.sid.models.Measure;
+
+import lombok.Data;
+
+@Data
 public class Task implements Runnable {
+
+	private Measure measure;
+	private Processor process = Processor.getInstance();
+
+	public Task(Measure measure) {
+		this.measure = measure;
+	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
+		process.getMeasures().add(measure);
+		//TODO implement stuff here
 	}
+	
+	//TODO implement stuff here
 }

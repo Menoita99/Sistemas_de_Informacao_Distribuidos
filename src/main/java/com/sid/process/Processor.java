@@ -1,10 +1,5 @@
 package com.sid.process;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Random;
-
 import org.json.JSONObject;
 
 import com.sid.database.MongoConnector;
@@ -22,6 +17,8 @@ public class Processor {
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	
+	//Atenção que ao iterar remover ou adicionar pode haver um erro de concurrencia.
+	//Irei implementar um mecanismo de locks para evitar este problema
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
 
 	//connectors
@@ -48,27 +45,17 @@ public class Processor {
 	
 	/**
 	 * Main loop
-	 * 
 	 */
 	public void Process() {
-		Random r = new Random();
 		while(true) {
-			 //Isto é apenas para testar o Performance Monitor Depois é para apagar 
+			JSONObject jobj = mongoConnector.read();
+			System.out.println("Read-> "+jobj);
 			try {
-				Thread.sleep(1000);
-				Map<String, Object> m = Map.of("tmp",r.nextInt(20)+10, "hum",r.nextInt(50)+10, "dat","15/05/2020",
-												"tim",LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")), 
-												"cell",r.nextInt(200)+10, "mov",r.nextBoolean() ? 1 : 0, "sens","tst");
-				measures.add(new Measure(new JSONObject(m)));
-				if(measures.size() >= 10)
-					measures.clear();
-
-			} catch (InterruptedException e) {
+				workers.submit(new Task(new Measure(jobj)));
+			} catch (Exception e) {
+				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
 			}
-			
-			
-			//TODO implement
 		}
 	}
 
@@ -82,7 +69,9 @@ public class Processor {
 		return INSTANCE;
 	}
 
-
+	
+	
+	
 
 
 

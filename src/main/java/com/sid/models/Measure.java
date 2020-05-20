@@ -20,11 +20,11 @@ public class Measure {
 
 	private boolean valid;
 
-	//{"tmp":"52","hum":"52.00","dat":"19/04/2020","tim":"09:54:58","cell":"228","mov":"1",”sens":"eth"}
-	//	public Measure(String measure) {
-	//		
-	//	}
-
+	
+	
+	
+	
+	
 	public Measure(JSONObject measure) {
 		valorTmpMedicao =  measure.getDouble("tmp");
 		valorHumMedicao =  measure.getDouble("hum");
@@ -38,8 +38,13 @@ public class Measure {
 		valid = validate();
 	}
 
+	
+	
+	
+	
+	
 	public boolean validate() {
-		return tipoSensor.matches("[a-zA-Z]{3}");
+		return tipoSensor.matches("[a-zA-Z]{3}") && valorLumMedicao>=0 && valorHumMedicao >=0;
 	}
 
 }
