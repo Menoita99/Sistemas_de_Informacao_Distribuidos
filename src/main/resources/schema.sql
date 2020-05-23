@@ -103,8 +103,11 @@ DROP TABLE IF EXISTS `ronda_extra`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ronda_extra` (
-  `datahora` timestamp NOT NULL,
-  PRIMARY KEY (`datahora`)
+  `email` varchar(100) NOT NULL,
+  `ronda_inicio` timestamp NOT NULL,
+  `ronda_fim` timestamp NOT NULL,
+  PRIMARY KEY (`email`,`ronda_inicio`),
+  CONSTRAINT `fk_ronda_inicio_email` FOREIGN KEY (`email`) REFERENCES `utilizador` (`EmailUtilizador`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -125,15 +128,11 @@ DROP TABLE IF EXISTS `ronda_planeada`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ronda_planeada` (
-  `EmailUtilizador` varchar(300) NOT NULL,
-  `DiaSemana` varchar(20) NOT NULL,
-  `HoraRonda` varchar(20) NOT NULL,
-  PRIMARY KEY (`EmailUtilizador`,`DiaSemana`,`HoraRonda`),
-  KEY `FK_DIA_SEMANA_idx` (`DiaSemana`),
-  KEY `Fk_HORA_RONDA_idx` (`HoraRonda`),
-  KEY `FK_EMAIL_UTILIZADOR_idx` (`EmailUtilizador`),
-  CONSTRAINT `FK_DIA_SEMANA` FOREIGN KEY (`DiaSemana`) REFERENCES `diasemana` (`DiaSemana`),
-  CONSTRAINT `FK_EMAIL_UTILIZADOR` FOREIGN KEY (`EmailUtilizador`) REFERENCES `utilizador` (`EmailUtilizador`)
+  `email` varchar(100) NOT NULL,
+  `ronda_inicio` timestamp NOT NULL,
+  `ronda_fim` timestamp NOT NULL,
+  PRIMARY KEY (`email`,`ronda_inicio`),
+  CONSTRAINT `fk_ronda_fim_email` FOREIGN KEY (`email`) REFERENCES `utilizador` (`EmailUtilizador`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -156,7 +155,11 @@ DROP TABLE IF EXISTS `sistema`;
 CREATE TABLE `sistema` (
   `LimiteTemperatura` decimal(6,2) NOT NULL,
   `LimiteHumidade` decimal(6,2) NOT NULL,
-  `LimiteLuminosidade` decimal(6,2) NOT NULL
+  `LimiteLuminosidade` decimal(6,2) NOT NULL,
+  `margem_temperatura` decimal(6,2) NOT NULL,
+  `margem_humidade` decimal(6,2) NOT NULL,
+  `margem_luminosidade` decimal(6,2) NOT NULL,
+  `num_mov_alerta` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -166,7 +169,7 @@ CREATE TABLE `sistema` (
 
 LOCK TABLES `sistema` WRITE;
 /*!40000 ALTER TABLE `sistema` DISABLE KEYS */;
-INSERT INTO `sistema` VALUES (50.00,30.00,20.00);
+INSERT INTO `sistema` VALUES (50.00,30.00,20.00,0.00,0.00,0.00,0);
 /*!40000 ALTER TABLE `sistema` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,4 +208,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-15 23:30:52
+-- Dump completed on 2020-05-23 22:25:06
