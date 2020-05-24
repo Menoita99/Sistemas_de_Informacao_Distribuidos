@@ -17,6 +17,7 @@ public class Measure {
 	private LocalDateTime dataHoraMedicao;
 	private boolean controlo = false;
 	private String extra = "";
+	private String objectId;
 
 	private boolean valid;
 
@@ -35,6 +36,7 @@ public class Measure {
 		String[] splitedTim = measure.getString("tim").split(":");
 		dataHoraMedicao = LocalDateTime.of(Integer.parseInt(splitedDat[2]), Integer.parseInt(splitedDat[1]), Integer.parseInt(splitedDat[0]), 
 											Integer.parseInt(splitedTim[0]), Integer.parseInt(splitedTim[1]), Integer.parseInt(splitedTim[2]));
+		objectId = measure.getString("_id");
 		valid = validate();
 	}
 
