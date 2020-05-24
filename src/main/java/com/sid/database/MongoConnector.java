@@ -102,14 +102,22 @@ public class MongoConnector {
 		}
 	}
 	
+	
+	
+	
+	
+	
 	/**
 	 * This method deletes a mongodb entry with the given id
 	 * 
 	 * @param m
 	 */
-	private void deleteEntryWithObjectId(String id) {
+	public void deleteEntryWithObjectId(String id) {
 		collection.deleteOne(new Document("_id", new ObjectId(id)));
 	}
+	
+	
+	
 	
 	
 
@@ -119,13 +127,5 @@ public class MongoConnector {
 	 */
 	private synchronized void notifyRead() {
 		this.notify();
-	}
-
-
-	
-	
-	
-	public static void main(String[] args) {
-		
 	}
 }
