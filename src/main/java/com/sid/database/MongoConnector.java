@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import com.mongodb.MongoClient;
@@ -100,7 +101,15 @@ public class MongoConnector {
 			return null;
 		}
 	}
-
+	
+	/**
+	 * This method deletes a mongodb entry with the given id
+	 * 
+	 * @param m
+	 */
+	private void deleteEntryWithObjectId(String id) {
+		collection.deleteOne(new Document("_id", new ObjectId(id)));
+	}
 	
 	
 
@@ -117,6 +126,6 @@ public class MongoConnector {
 	
 	
 	public static void main(String[] args) {
-		MongoConnector.getInstance();
+		
 	}
 }
