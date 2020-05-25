@@ -1,4 +1,3 @@
---CREATE DATABASE  IF NOT EXISTS `sid_2` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `sid_2`;
 -- MySQL dump 10.13  Distrib 8.0.18, for Win64 (x86_64)
 --
@@ -55,9 +54,9 @@ DROP TABLE IF EXISTS `diasemana`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `diasemana` (
-  `DiaHora` varchar(20) NOT NULL,
-  `HoraRonda` time NOT NULL,
-  PRIMARY KEY (`DiaHora`,`HoraRonda`)
+  `DiaSemana` varchar(20) NOT NULL,
+  `HoraRonda` varchar(20) NOT NULL,
+  PRIMARY KEY (`DiaSemana`,`HoraRonda`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -104,8 +103,11 @@ DROP TABLE IF EXISTS `ronda_extra`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ronda_extra` (
-  `datahora` timestamp NOT NULL,
-  PRIMARY KEY (`datahora`)
+  `email` varchar(100) NOT NULL,
+  `ronda_inicio` timestamp NOT NULL,
+  `ronda_fim` timestamp NOT NULL,
+  PRIMARY KEY (`email`,`ronda_inicio`),
+  CONSTRAINT `fk_ronda_inicio_email` FOREIGN KEY (`email`) REFERENCES `utilizador` (`EmailUtilizador`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -119,6 +121,31 @@ LOCK TABLES `ronda_extra` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `ronda_planeada`
+--
+
+DROP TABLE IF EXISTS `ronda_planeada`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ronda_planeada` (
+  `email` varchar(100) NOT NULL,
+  `ronda_inicio` timestamp NOT NULL,
+  `ronda_fim` timestamp NOT NULL,
+  PRIMARY KEY (`email`,`ronda_inicio`),
+  CONSTRAINT `fk_ronda_fim_email` FOREIGN KEY (`email`) REFERENCES `utilizador` (`EmailUtilizador`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ronda_planeada`
+--
+
+LOCK TABLES `ronda_planeada` WRITE;
+/*!40000 ALTER TABLE `ronda_planeada` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ronda_planeada` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sistema`
 --
 
@@ -128,7 +155,11 @@ DROP TABLE IF EXISTS `sistema`;
 CREATE TABLE `sistema` (
   `LimiteTemperatura` decimal(6,2) NOT NULL,
   `LimiteHumidade` decimal(6,2) NOT NULL,
-  `LimiteLuminosidade` decimal(6,2) NOT NULL
+  `LimiteLuminosidade` decimal(6,2) NOT NULL,
+  `margem_temperatura` decimal(6,2) NOT NULL,
+  `margem_humidade` decimal(6,2) NOT NULL,
+  `margem_luminosidade` decimal(6,2) NOT NULL,
+  `num_mov_alerta` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -138,7 +169,7 @@ CREATE TABLE `sistema` (
 
 LOCK TABLES `sistema` WRITE;
 /*!40000 ALTER TABLE `sistema` DISABLE KEYS */;
-INSERT INTO `sistema` VALUES (30.00,50.00,500.00);
+INSERT INTO `sistema` VALUES (50.00,30.00,20.00,0.00,0.00,0.00,0);
 /*!40000 ALTER TABLE `sistema` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -177,4 +208,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-14 14:50:33
+-- Dump completed on 2020-05-23 22:25:06

@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 public class Measure {
 
+	private String objectId;
+	
 	private double valorTmpMedicao;
 	private double valorHumMedicao;
 	private double valorLumMedicao;
@@ -16,16 +18,17 @@ public class Measure {
 	private String tipoSensor;
 	private LocalDateTime dataHoraMedicao;
 	private boolean controlo = false;
-	private String extra = "";
+	private String extra = " ";
 
 	private boolean valid;
 
-	//{"tmp":"52","hum":"52.00","dat":"19/04/2020","tim":"09:54:58","cell":"228","mov":"1",”sens":"eth"}
-	//	public Measure(String measure) {
-	//		
-	//	}
-
+	
+	
+	
+	
+	
 	public Measure(JSONObject measure) {
+		objectId = measure.getJSONObject("_id").getString("$oid");
 		valorTmpMedicao =  measure.getDouble("tmp");
 		valorHumMedicao =  measure.getDouble("hum");
 		valorLumMedicao =  measure.getDouble("cell");
@@ -38,8 +41,13 @@ public class Measure {
 		valid = validate();
 	}
 
+	
+	
+	
+	
+	
 	public boolean validate() {
-		return tipoSensor.matches("[a-zA-Z]{3}");
+		return tipoSensor.matches("[a-zA-Z]{4}") && valorLumMedicao>=0 && valorHumMedicao >=0;
 	}
 
 }
