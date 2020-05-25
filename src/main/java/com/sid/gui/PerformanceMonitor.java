@@ -37,7 +37,7 @@ public class PerformanceMonitor extends Application implements Initializable{
 
 	XYChart.Series<String,Number> temSerie = new XYChart.Series<>();
 	XYChart.Series<String,Number> humSerie = new XYChart.Series<>();
-	XYChart.Series<String,Number> lumSerie = new XYChart.Series<>();
+//	XYChart.Series<String,Number> lumSerie = new XYChart.Series<>();
 
 	private Processor processor = Processor.getInstance();
 
@@ -55,10 +55,10 @@ public class PerformanceMonitor extends Application implements Initializable{
 
 		temSerie.setName("Temperature");
 		humSerie.setName("Humidity");
-		lumSerie.setName("Luminosity");
+//		lumSerie.setName("Luminosity");
 
 		chart.getData().add(temSerie);
-		chart.getData().add(lumSerie);
+//		chart.getData().add(lumSerie);
 		chart.getData().add(humSerie);
 		chart.setAnimated(false);
 
@@ -86,14 +86,14 @@ public class PerformanceMonitor extends Application implements Initializable{
 
 						for (Measure item : list) {
 							String time = item.getDataHoraMedicao().format(DateTimeFormatter.ofPattern("mm:ss"));
-							lumSerie.getData().add(new XYChart.Data<String,Number>( time, item.getValorLumMedicao()));
+//							lumSerie.getData().add(new XYChart.Data<String,Number>( time, item.getValorLumMedicao()));
 							temSerie.getData().add(new XYChart.Data<String,Number>( time, item.getValorTmpMedicao()));
 							humSerie.getData().add(new XYChart.Data<String,Number>( time, item.getValorHumMedicao()));
 
-							if (lumSerie.getData().size() > MAX_ELEMS) {
+							if (temSerie.getData().size() > MAX_ELEMS) {
 								temSerie.getData().remove(0);
 								humSerie.getData().remove(0);
-								lumSerie.getData().remove(0);
+//								lumSerie.getData().remove(0);
 							}
 						}
 					});
