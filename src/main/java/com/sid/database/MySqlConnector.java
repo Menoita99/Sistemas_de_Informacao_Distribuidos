@@ -183,26 +183,22 @@ public class MySqlConnector {
 			}
 		}
 
-		for (boolean b : duplicates) {
-			System.out.println(b);
-		}
-
 		return duplicates;
 	}
 
 	public static void main(String[] args) {
-//		getInstance().executeSchemaScript();
-		for (int i = 0; i < 60; i++) {
-			Measure m = new Measure(new JSONObject(Map.of("_id","5ec4fe8002c13a79407b3bab",
-					"hum",38.30,
-					"mov",0,
-					"tmp",Double.parseDouble((Math.random()*90+10+"").substring(0,6)),
-					"dat","25/5/2020",
-					"sens","wifi",
-					"tim","00:50:0"+i,
-					"cell",3042)));
-			getInstance().saveMeasure(m);
-		}
+		getInstance().executeSchemaScript();
+//		for (int i = 0; i < 60; i++) {
+//			Measure m = new Measure(new JSONObject(Map.of("_id","5ec4fe8002c13a79407b3bab",
+//					"hum",38.30,
+//					"mov",0,
+//					"tmp",Double.parseDouble((Math.random()*90+10+"").substring(0,6)),
+//					"dat","25/5/2020",
+//					"sens","wifi",
+//					"tim","00:50:0"+i,
+//					"cell",3042)));
+//			getInstance().saveMeasure(m);
+//		}
 		
 //		System.out.println(m.getDataHoraMedicao());
 	}
