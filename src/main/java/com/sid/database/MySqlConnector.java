@@ -21,14 +21,11 @@ import org.json.JSONObject;
 
 import com.sid.models.Measure;
 
-
 public class MySqlConnector {
 
 	private static MySqlConnector INSTANCE;
 
 	private static Connection connection;
-
-
 
 	public MySqlConnector() {
 		String dbUrl = "";
@@ -44,26 +41,23 @@ public class MySqlConnector {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			connection = DriverManager.getConnection(dbUrl, user, password);
 		} catch (IOException | ClassNotFoundException e) {
-			System.err.println("User : -> "+user);
-			System.err.println("DBUrl : -> "+dbUrl);
-			System.err.println("Password : -> "+password);
+			System.err.println("User : -> " + user);
+			System.err.println("DBUrl : -> " + dbUrl);
+			System.err.println("Password : -> " + password);
 			e.printStackTrace();
 		} catch (SQLException e) {
-			System.err.println("Couldn't connect database "+dbUrl+"\nCredentials:\n\tUser: "+user+"\n\tPassword: "+password);
+			System.err.println("Couldn't connect database " + dbUrl + "\nCredentials:\n\tUser: " + user
+					+ "\n\tPassword: " + password);
 			e.printStackTrace();
 		}
 	}
-
-
-
-
 
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
 	public void executeSchemaScript() {
 		ScriptRunner sr = new ScriptRunner(connection);
-		try(Reader reader =new BufferedReader(new FileReader("src/main/resources/schema.sql"))){
+		try (Reader reader = new BufferedReader(new FileReader("src/main/resources/schema.sql"))) {
 			sr.runScript(reader);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -72,19 +66,11 @@ public class MySqlConnector {
 		}
 	}
 
-
-
-
-
 	public static MySqlConnector getInstance() {
-		if(INSTANCE == null)
+		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
 		return INSTANCE;
 	}
-
-
-
-
 
 	public List<Object> getSystemValues() {
 		List<Object> output = new ArrayList<>();
@@ -99,7 +85,7 @@ public class MySqlConnector {
 		} catch (SQLException e) {
 			System.err.println("Something happened while fecthing Sistema values\nVerify if Sistema has values");
 			e.printStackTrace();
-		}finally {
+		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
@@ -109,38 +95,42 @@ public class MySqlConnector {
 		return output;
 	}
 
-
-
-
-
-
 	public boolean saveMeasure(Measure m) {
 		Statement stm = null;
 		try {
 			boolean[] duplicatesCheck = checkForDuplicates(m);
 			stm = connection.createStatement();
 
-			if(duplicatesCheck[0])//HUMIDITY
-				stm.executeUpdate("INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "+ 
-						"VALUES ("+m.getValorHumMedicao()+", 'HUM' , '"+ m.getDataHoraMedicao() +"', "+(m.isControlo() ? 1 : 0)+", '"+m.getExtra()+"');");
-			
-			if(duplicatesCheck[1])//TEMPERATURE
-				stm.executeUpdate("INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "+ 
-						"VALUES ("+m.getValorTmpMedicao()+", 'TMP' , '"+ m.getDataHoraMedicao() +"', "+(m.isControlo() ? 1 : 0)+", '"+m.getExtra()+"');");
-			
-			if(duplicatesCheck[2])//LUMINOSITY
-				stm.executeUpdate("INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "+ 
-						"VALUES ("+m.getValorMovMedicao()+", 'MOV' , '"+ m.getDataHoraMedicao() +"', "+(m.isControlo() ? 1 : 0)+", '"+m.getExtra()+"');");
-			
-			if(duplicatesCheck[3])//MOVEMENT
-				stm.executeUpdate("INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "+ 
-						"VALUES ("+m.getValorLumMedicao()+", 'LUM' , '"+ m.getDataHoraMedicao() +"', "+(m.isControlo() ? 1 : 0)+", '"+m.getExtra()+"');");
-			
-			//			MongoConnector.getInstance().deleteEntryWithMeasure(m);
+			if (!duplicatesCheck[0])// HUMIDITY
+				stm.executeUpdate(
+						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
+								+ "VALUES (" + m.getValorHumMedicao() + ", 'HUM' , '" + m.getDataHoraMedicao() + "', "
+								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
+
+			if (!duplicatesCheck[1])// TEMPERATURE
+				stm.executeUpdate(
+						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
+								+ "VALUES (" + m.getValorTmpMedicao() + ", 'TMP' , '" + m.getDataHoraMedicao() + "', "
+								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
+
+			if (!duplicatesCheck[2])// MOVEMENT
+				stm.executeUpdate(
+						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
+								+ "VALUES (" + m.getValorMovMedicao() + ", 'MOV' , '" + m.getDataHoraMedicao() + "', "
+								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
+
+			if (!duplicatesCheck[3])// LUMINOSITY
+				stm.executeUpdate(
+						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
+								+ "VALUES (" + m.getValorLumMedicao() + ", 'LUM' , '" + m.getDataHoraMedicao() + "', "
+								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
+
+			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
 		} catch (SQLException e) {
-			System.out.println("[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			System.out.println(
+					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
 			e.printStackTrace();
-		}finally {
+		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
@@ -150,17 +140,55 @@ public class MySqlConnector {
 		return false;
 	}
 
+	public boolean[] checkForDuplicates(Measure m) {
+		boolean[] duplicates = new boolean[4];
+		Statement stm = null;
+		try {
+			stm = connection.createStatement();
+			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
+					+ m.getValorHumMedicao() + " and TipoSensor = 'HUM' " + "and DataHoraMedicao = " + "'"
+					+ m.getDataHoraMedicao() + "';");
+			if (hum.next())
+				duplicates[0] = true;
+			else
+				duplicates[0] = false;
+			ResultSet temp = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
+					+ m.getValorTmpMedicao() + " and TipoSensor = 'TMP' " + "and DataHoraMedicao = " + "'"
+					+ m.getDataHoraMedicao() + "';");
+			if (temp.next())
+				duplicates[1] = true;
+			else
+				duplicates[1] = false;
+			ResultSet mov = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
+					+ m.getValorMovMedicao() + " and TipoSensor = 'MOV' " + "and DataHoraMedicao = " + "'"
+					+ m.getDataHoraMedicao() + "';");
+			if (mov.next())
+				duplicates[2] = true;
+			else
+				duplicates[2] = false;
+			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
+					+ m.getValorLumMedicao() + " and TipoSensor = 'LUM' " + "and DataHoraMedicao = " + "'"
+					+ m.getDataHoraMedicao() + "';");
+			if (lum.next())
+				duplicates[3] = true;
+			else
+				duplicates[3] = false;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 
+		for (boolean b : duplicates) {
+			System.out.println(b);
+		}
 
-
-	private boolean[] checkForDuplicates(Measure m) {
-		// TODO Auto-generated method stub
-		return new boolean[] {true, true, true, true};
+		return duplicates;
 	}
-
-
-
-
 
 	public static void main(String[] args) {
 //		getInstance().executeSchemaScript();

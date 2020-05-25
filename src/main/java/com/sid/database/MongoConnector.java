@@ -26,7 +26,7 @@ public class MongoConnector {
 	private MongoDatabase database;
 	private MongoCollection<Document> collection;
 
-	private Document doc= null;
+	private Document doc = null;
 
 	public MongoConnector() {
 		String db = "";
@@ -35,31 +35,27 @@ public class MongoConnector {
 			Properties p = new Properties();
 			p.load(new FileInputStream("src/main/resources/config.ini"));
 			db = p.getProperty("mongo_db");
-			uri =  p.getProperty("mongo_uri");
+			uri = p.getProperty("mongo_uri");
 			MongoClient mongoClient = new MongoClient(new MongoClientURI(uri));
 			database = mongoClient.getDatabase(db);
 			collection = database.getCollection("medicoes_sensores");
 
 			initiateChangeListener(mongoClient);
 		} catch (IOException e) {
-			System.err.println("Uri : -> "+uri+"\nDb : -> "+db);
+			System.err.println("Uri : -> " + uri + "\nDb : -> " + db);
 			e.printStackTrace();
 		}
 	}
 
-
-
-
-	
 	/**
-	 * Start the Listener Thread that will watch Mongo messages
-	 * and closes Mongo Client 
+	 * Start the Listener Thread that will watch Mongo messages and closes Mongo
+	 * Client
 	 */
 	private void initiateChangeListener(MongoClient mc) {
-		ChangeStreamIterable<Document> changes = collection.watch(
-				Arrays.asList(Aggregates.match(Filters.and(Arrays.asList( Filters.in("operationType", Arrays.asList("insert")))))));
+		ChangeStreamIterable<Document> changes = collection.watch(Arrays.asList(
+				Aggregates.match(Filters.and(Arrays.asList(Filters.in("operationType", Arrays.asList("insert")))))));
 
-		new Thread(() ->{
+		new Thread(() -> {
 			changes.iterator().forEachRemaining(change -> {
 				doc = change.getFullDocument();
 				notifyRead();
@@ -68,45 +64,33 @@ public class MongoConnector {
 		}).start();
 	}
 
-
-
-	
-
 	/**
 	 * returns singleton instance
 	 */
 	public static MongoConnector getInstance() {
-		if(INSTANCE == null)
+		if (INSTANCE == null)
 			INSTANCE = new MongoConnector();
 		return INSTANCE;
 	}
 
-
-	
-	
-
 	/**
 	 * This method stops the thread and waits for a Mongo message
+	 * 
 	 * @return returns Mongo object read
 	 */
 	public synchronized JSONObject read() {
 		try {
-			while(doc == null) 
+			while (doc == null)
 				wait();
 			JSONObject jsonObject = new JSONObject(doc.toJson());
 			doc = null;
 			return jsonObject;
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-	
-	
-	
-	
-	
-	
+
 	/**
 	 * This method deletes a mongodb entry with the given id
 	 * 
@@ -115,15 +99,9 @@ public class MongoConnector {
 	public void deleteEntryWithObjectId(String id) {
 		collection.deleteOne(new Document("_id", new ObjectId(id)));
 	}
-	
-	
-	
-	
-	
-
 
 	/**
-	 *Notifies thread that are in waiting 
+	 * Notifies thread that are in waiting
 	 */
 	private synchronized void notifyRead() {
 		this.notify();

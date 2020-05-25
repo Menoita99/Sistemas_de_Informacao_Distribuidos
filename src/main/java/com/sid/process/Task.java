@@ -1,5 +1,6 @@
 package com.sid.process;
 
+import com.sid.database.MySqlConnector;
 import com.sid.models.Measure;
 
 import lombok.Data;
@@ -17,6 +18,7 @@ public class Task implements Runnable {
 	@Override
 	public void run() {
 		process.getMeasures().add(measure);
+		MySqlConnector.getInstance().saveMeasure(measure);
 		//TODO implement stuff here
 	}
 	
