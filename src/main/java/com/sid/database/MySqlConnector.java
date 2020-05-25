@@ -13,9 +13,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
+import org.json.JSONObject;
 
 import com.sid.models.Measure;
 
@@ -161,16 +163,19 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		getInstance().executeSchemaScript();
-//		Measure m = new Measure(new JSONObject(Map.of("_id","5ec4fe8002c13a79407b3bab",
-//				"hum",38.30,
-//				"mov",0,
-//				"tmp",27.70,
-//				"dat","20/5/2020",
-//				"sens","wifi",
-//				"tim","9:55:12",
-//				"cell",3042)));
-//		getInstance().saveMeasure(m);
+//		getInstance().executeSchemaScript();
+		for (int i = 0; i < 60; i++) {
+			Measure m = new Measure(new JSONObject(Map.of("_id","5ec4fe8002c13a79407b3bab",
+					"hum",38.30,
+					"mov",0,
+					"tmp",Double.parseDouble((Math.random()*90+10+"").substring(0,6)),
+					"dat","25/5/2020",
+					"sens","wifi",
+					"tim","00:50:0"+i,
+					"cell",3042)));
+			getInstance().saveMeasure(m);
+		}
+		
 //		System.out.println(m.getDataHoraMedicao());
 	}
 }
