@@ -11,6 +11,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,15 +21,19 @@ import java.util.Properties;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.json.JSONObject;
 
+import com.sid.models.Alarm;
 import com.sid.models.Measure;
+import com.sid.models.Round;
 
 public class MySqlConnector {
 
 	private static MySqlConnector INSTANCE;
+	private ArrayList<Round> round_list;
 
 	private static Connection connection;
 
 	public MySqlConnector() {
+		round_list = new ArrayList<>();
 		String dbUrl = "";
 		String user = "";
 		String password = "";
@@ -190,20 +196,180 @@ public class MySqlConnector {
 		return duplicates;
 	}
 
-	public static void main(String[] args) {
-//		getInstance().executeSchemaScript();
-		for (int i = 0; i < 60; i++) {
-			Measure m = new Measure(new JSONObject(Map.of("_id","5ec4fe8002c13a79407b3bab",
-					"hum",38.30,
-					"mov",0,
-					"tmp",Double.parseDouble((Math.random()*90+10+"").substring(0,6)),
-					"dat","25/5/2020",
-					"sens","wifi",
-					"tim","00:50:0"+i,
-					"cell",3042)));
-			getInstance().saveMeasure(m);
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public Round findRondaByDate(LocalDateTime date) {
+		round_list.clear();
+		Statement stm = null;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		String data = date.format(formatter);		
+		try {
+			//vai buscar a tabela da ronda planeada e extra
+			stm = connection.createStatement();
+			String command = "(SELECT * FROM sid_2.ronda_extra  where ronda_inicio=\"" + data + "\")"
+					+ "Union "
+					+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\")";
+
+			ResultSet ronda_planeada_extra = stm.executeQuery(command);
+			reading_rounds_table(ronda_planeada_extra);
+
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		return round_list.get(0);
+	}
+	private void reading_rounds_table(ResultSet rp) throws SQLException {
+		//read line at a time
+		while (rp.next())
+		{
+			String user_mail = rp.getString("email");
+			String ronda_inicio = rp.getString("ronda_inicio");
+			String ronda_fim = rp.getString("ronda_inicio");
+
+			add_round(user_mail,ronda_inicio,ronda_fim);
+
+		}		
+	}
+
+	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
+		round_list.add( new Round(user_mail,ronda_inicio,ronda_fim));
 		
-//		System.out.println(m.getDataHoraMedicao());
+	}
+
+	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date){
+		round_list.clear();
+		Statement stm = null;
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		String data = date.format(formatter);
+
+		try {
+			//vai buscar a tabela da ronda planeada e extra
+			stm = connection.createStatement();
+			String command = "(SELECT * FROM sid_2.ronda_extra  where ronda_inicio >=\"" + data + "\")"
+					+ "Union "
+					+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio >=\"" + data + "\")";
+
+			ResultSet ronda_planeada_extra = stm.executeQuery(command);
+			reading_rounds_table(ronda_planeada_extra);
+
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	
+		return round_list;
+
+	}
+	
+	public Alarm findLastSevereAlarm(){
+		Statement stm = null;
+		Alarm a = null;
+		try {
+			//vai buscar a tabela da ronda planeada e extra
+			stm = connection.createStatement();
+			String command = "SELECT * FROM sid_2.alerta where Controlo = 0 and DataHoraMedicao=(Select max(DataHoraMedicao) from sid_2.alerta);";
+
+			ResultSet tp = stm.executeQuery(command);
+			a = reading_alert_table(tp);
+		
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return a;
+	}
+	
+	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
+		Alarm a;
+		while (tp.next())
+		{
+			String date_string = tp.getString("DataHoraMedicao");
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime date = LocalDateTime.parse(date_string,formatter);
+			
+			String tipo = tp.getString("TipoSensor");
+			Double value_med = tp.getDouble("ValorMedicao");
+			Double limit = tp.getDouble("Limite");
+			String description = tp.getString("Descricao");
+			boolean control = tp.getBoolean("Controlo");
+			String extra = tp.getString("Extra");
+						
+			return add_alarm(date,tipo,value_med,limit,description,control,extra);
+		}	
+		return null;
+	}
+
+	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description,
+			boolean control, String extra) {
+		return new Alarm(value_med,tipo,data,limit,description,extra,control);
+	}
+
+	public Alarm findLastDangerAlarm(){
+		Statement stm = null;
+		Alarm a = null;
+		try {
+			//vai buscar a tabela da ronda planeada e extra
+			stm = connection.createStatement();
+			String command = "SELECT * FROM sid_2.alerta where Controlo = 1 and DataHoraMedicao=(Select max(DataHoraMedicao) from sid_2.alerta);";
+
+			ResultSet tp = stm.executeQuery(command);
+			a = reading_alert_table(tp);
+		
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return a;
+	}
+
+	public static void main(String[] args) {
+		int year=2003;
+		int month=12;
+		int dayOfMonth=31;
+		int hour=02;
+		int minute=00;
+		LocalDateTime date = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
+
+		System.out.println(getInstance().findRondaByDate(date));
+		System.out.println(getInstance().findAllRondasBiggerThen(date));
+
+		System.out.println(getInstance().findLastDangerAlarm());
+		System.out.println(getInstance().findLastSevereAlarm());
+
 	}
 }
