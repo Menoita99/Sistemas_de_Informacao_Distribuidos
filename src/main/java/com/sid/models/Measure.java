@@ -59,7 +59,9 @@ public class Measure {
 	private void setTmpement(JSONObject measure) {
 		try {
 			valorTmpMedicao = measure.getDouble("Tmp");
-			//TODO VERIFICATIONS
+			if(valorTmpMedicao < -273.15) {
+				controloTmp = false;
+			}
 		} catch (Exception e) {
 			controloTmp = false;
 			extraTmp = "Could not found value Tmp";
