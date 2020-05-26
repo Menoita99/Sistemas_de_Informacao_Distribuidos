@@ -204,10 +204,7 @@ public class MySqlConnector {
 				e.printStackTrace();
 			}
 		}
-<<<<<<< HEAD
 
-=======
->>>>>>> branch 'master' of https://github.com/Menoita99/Sistemas_de_Informacao_Distribuidos.git
 		return duplicates;
 	}
 
@@ -216,22 +213,6 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-<<<<<<< HEAD
-		getInstance().executeSchemaScript();
-//		for (int i = 0; i < 60; i++) {
-//			Measure m = new Measure(new JSONObject(Map.of("_id","5ec4fe8002c13a79407b3bab",
-//					"hum",38.30,
-//					"mov",0,
-//					"tmp",Double.parseDouble((Math.random()*90+10+"").substring(0,6)),
-//					"dat","25/5/2020",
-//					"sens","wifi",
-//					"tim","00:50:0"+i,
-//					"cell",3042)));
-//			getInstance().saveMeasure(m);
-//		}
-		
-//		System.out.println(m.getDataHoraMedicao());
-=======
 		//		getInstance().executeSchemaScript();
 //		for (int i = 13; i < 16; i++) {
 //			for (int j = 10; j < 60; j++) {
@@ -247,6 +228,5 @@ public class MySqlConnector {
 //				getInstance().saveMeasure(m);
 //			}
 //		}
->>>>>>> branch 'master' of https://github.com/Menoita99/Sistemas_de_Informacao_Distribuidos.git
 	}
 }
