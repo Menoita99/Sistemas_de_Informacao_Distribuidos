@@ -15,11 +15,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.json.JSONObject;
 
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
@@ -32,6 +30,9 @@ public class MySqlConnector {
 
 	private static Connection connection;
 
+
+
+
 	public MySqlConnector() {
 		round_list = new ArrayList<>();
 		String dbUrl = "";
@@ -43,9 +44,13 @@ public class MySqlConnector {
 			dbUrl = p.getProperty("mysql_db_url");
 			user = p.getProperty("mysql_user");
 			password = p.getProperty("mysql_password");
-
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			connection = DriverManager.getConnection(dbUrl, user, password);
+			
+			new Thread(() -> {
+				checkForUnsavedMeasures();
+				try {Thread.sleep(30000);} catch (InterruptedException e) {e.printStackTrace();}
+			}).start();
 		} catch (IOException | ClassNotFoundException e) {
 			System.err.println("User : -> " + user);
 			System.err.println("DBUrl : -> " + dbUrl);
@@ -57,6 +62,11 @@ public class MySqlConnector {
 			e.printStackTrace();
 		}
 	}
+
+
+
+
+
 
 	/**
 	 * Executes schema.sql present in resources folder
@@ -72,11 +82,19 @@ public class MySqlConnector {
 		}
 	}
 
+
+
+
+
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
 		return INSTANCE;
 	}
+
+
+
+
 
 	public List<Object> getSystemValues() {
 		List<Object> output = new ArrayList<>();
@@ -101,40 +119,41 @@ public class MySqlConnector {
 		return output;
 	}
 
+
+
+
+
 	public boolean saveMeasure(Measure m) {
 		Statement stm = null;
 		try {
 			boolean[] duplicatesCheck = checkForDuplicates(m);
 			stm = connection.createStatement();
-
-			if (!duplicatesCheck[0])// HUMIDITY
-				stm.executeUpdate(
-						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
-								+ "VALUES (" + m.getValorHumMedicao() + ", 'HUM' , '" + m.getDataHoraMedicao() + "', "
-								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
-
-			if (!duplicatesCheck[1])// TEMPERATURE
-				stm.executeUpdate(
-						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
-								+ "VALUES (" + m.getValorTmpMedicao() + ", 'TMP' , '" + m.getDataHoraMedicao() + "', "
-								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
-
-			if (!duplicatesCheck[2])// MOVEMENT
-				stm.executeUpdate(
-						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
-								+ "VALUES (" + m.getValorMovMedicao() + ", 'MOV' , '" + m.getDataHoraMedicao() + "', "
-								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
-
-			if (!duplicatesCheck[3])// LUMINOSITY
-				stm.executeUpdate(
-						"INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra) "
-								+ "VALUES (" + m.getValorLumMedicao() + ", 'LUM' , '" + m.getDataHoraMedicao() + "', "
-								+ (m.isControlo() ? 1 : 0) + ", '" + m.getExtra() + "');");
-
+			String query = "INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra)  VALUES ";
+			boolean modified = false;
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
+			
+			if (!duplicatesCheck[0]) {// HUMIDITY
+				query += (modified ? "," : "" )+"(" + m.getValorHumMedicao() + ", 'HUM' , '" + dataHoraMedicao + "', " + (m.isControloHum() ? 1 : 0) + ", '" + m.getExtraHum() + "')";
+				modified = true;
+			}
+			if (!duplicatesCheck[1]) {// TEMPERATURE
+				query += (modified ? "," : "" )+"(" + m.getValorTmpMedicao() + ", 'TMP' , '" + dataHoraMedicao + "', " + (m.isControloTmp() ? 1 : 0) + ", '" + m.getExtraTmp() + "')";
+				modified = true;
+			}
+			if (!duplicatesCheck[2]) {// MOVEMENT
+				query += (modified ? "," : "" )+"(" + m.getValorMovMedicao() + ", 'MOV' , '" + dataHoraMedicao + "', " + (m.isControloMov() ? 1 : 0) + ", '" + m.getExtraMov() + "')";
+				modified = true;
+			}
+			if (!duplicatesCheck[3]) {// LUMINOSITY
+				query += (modified ? "," : "" )+"(" + m.getValorHumMedicao() + ", 'LUM' , '" + dataHoraMedicao + "', " + (m.isControloLum() ? 1 : 0) + ", '" + m.getExtraLum() + "')";
+				modified = true;
+			}
+			
+			if(modified) stm.executeUpdate(query);
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
+			System.out.println("Saved -> "+m);
 		} catch (SQLException e) {
-			System.out.println(
-					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			System.out.println("[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
 			e.printStackTrace();
 		} finally {
 			try {
@@ -146,39 +165,41 @@ public class MySqlConnector {
 		return false;
 	}
 
+
+
+
+
+	private void checkForUnsavedMeasures() {
+		List<Measure> unsavedMeasures =  MongoConnector.getInstance().findAllMeasures();
+		for (Measure measure : unsavedMeasures)
+			saveMeasure(measure);
+	}
+
+
+
+
+
+
 	public boolean[] checkForDuplicates(Measure m) {
 		boolean[] duplicates = new boolean[4];
 		Statement stm = null;
 		try {
 			stm = connection.createStatement();
-			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorHumMedicao() + " and TipoSensor = 'HUM' " + "and DataHoraMedicao = " + "'"
-					+ m.getDataHoraMedicao() + "';");
-			if (hum.next())
-				duplicates[0] = true;
-			else
-				duplicates[0] = false;
+			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " 
+					+ m.getValorHumMedicao() + " and TipoSensor = 'HUM' and DataHoraMedicao = '" + m.getDataHoraMedicao() + "';");
+			duplicates[0] = hum.next();
+
 			ResultSet temp = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorTmpMedicao() + " and TipoSensor = 'TMP' " + "and DataHoraMedicao = " + "'"
-					+ m.getDataHoraMedicao() + "';");
-			if (temp.next())
-				duplicates[1] = true;
-			else
-				duplicates[1] = false;
+					+ m.getValorTmpMedicao() + " and TipoSensor = 'TMP' and DataHoraMedicao = '" + m.getDataHoraMedicao() + "';");
+			duplicates[1] = temp.next();
+
 			ResultSet mov = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorMovMedicao() + " and TipoSensor = 'MOV' " + "and DataHoraMedicao = " + "'"
-					+ m.getDataHoraMedicao() + "';");
-			if (mov.next())
-				duplicates[2] = true;
-			else
-				duplicates[2] = false;
+					+ m.getValorMovMedicao() + " and TipoSensor = 'MOV' and DataHoraMedicao = '"+ m.getDataHoraMedicao() + "';");
+			duplicates[2] = mov.next();
+
 			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorLumMedicao() + " and TipoSensor = 'LUM' " + "and DataHoraMedicao = " + "'"
-					+ m.getDataHoraMedicao() + "';");
-			if (lum.next())
-				duplicates[3] = true;
-			else
-				duplicates[3] = false;
+					+ m.getValorLumMedicao() + " and TipoSensor = 'LUM' and DataHoraMedicao =  '"+ m.getDataHoraMedicao() + "';");
+			duplicates[3] = lum.next();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -189,20 +210,8 @@ public class MySqlConnector {
 			}
 		}
 
-		for (boolean b : duplicates) {
-			System.out.println(b);
-		}
-
 		return duplicates;
 	}
-
-
-
-	
-	
-	
-	
-	
 	
 	
 	
@@ -373,5 +382,4 @@ public class MySqlConnector {
 		System.out.println(getInstance().findLastDangerAlarm());
 		System.out.println(getInstance().findLastSevereAlarm());
 
-	}
 }

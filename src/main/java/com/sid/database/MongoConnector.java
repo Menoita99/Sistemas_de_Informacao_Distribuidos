@@ -2,7 +2,9 @@ package com.sid.database;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -12,9 +14,11 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.sid.models.Measure;
 
 import lombok.Data;
 
@@ -47,6 +51,11 @@ public class MongoConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * Start the Listener Thread that will watch Mongo messages and closes Mongo
 	 * Client
@@ -64,6 +73,11 @@ public class MongoConnector {
 		}).start();
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * returns singleton instance
 	 */
@@ -73,6 +87,11 @@ public class MongoConnector {
 		return INSTANCE;
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * This method stops the thread and waits for a Mongo message
 	 * 
@@ -91,6 +110,11 @@ public class MongoConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * This method deletes a mongodb entry with the given id
 	 * 
@@ -100,10 +124,30 @@ public class MongoConnector {
 		collection.deleteOne(new Document("_id", new ObjectId(id)));
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * Notifies thread that are in waiting
 	 */
 	private synchronized void notifyRead() {
 		this.notify();
+	}
+
+
+
+
+
+
+	public List<Measure> findAllMeasures() {
+		List<Measure> list = new ArrayList<>();
+		MongoCursor<Measure> iterator = collection.find().map((d) -> new Measure(new JSONObject(d.toJson()))).iterator();
+		
+		while(iterator.hasNext()) 
+			list.add(iterator.next());
+		
+		return list;
 	}
 }

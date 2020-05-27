@@ -1,5 +1,7 @@
 package com.sid.process;
 
+import java.util.ArrayList;
+
 import org.json.JSONObject;
 
 import com.sid.database.MongoConnector;
@@ -51,7 +53,8 @@ public class Processor {
 			JSONObject jobj = mongoConnector.read();
 			System.out.println("Read-> "+jobj);
 			try {
-				workers.submit(new Task(new Measure(jobj)));
+				addMeasure(new Measure(jobj));
+				workers.submit(new Task(new ArrayList<Measure>(measures)));
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -73,7 +76,12 @@ public class Processor {
 	
 	
 
-
+	private void addMeasure(Measure newMeasure) {
+		measures.add(newMeasure);
+		if (measures.size() >= 3) {
+			measures.remove(0);
+		}
+	}
 
 	public void close() {
 		System.exit(0);
