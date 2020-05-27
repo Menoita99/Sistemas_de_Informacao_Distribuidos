@@ -3,6 +3,7 @@ package com.sid.process;
 import java.util.ArrayList;
 
 import com.sid.database.MySqlConnector;
+import com.sid.models.Alarm;
 import com.sid.models.Measure;
 
 import lombok.Data;
@@ -18,18 +19,26 @@ public class Task implements Runnable {
 		this.measures = measuresCopy;
 		this.measure = measures.get(measures.size()-1);
 		// Debug
-		System.out.println(measures);
-		double[] tempVals = measuresCopy.stream().mapToDouble(measure->measure.getValorTmpMedicao()).toArray();
-		double variance = varianceCheck(tempVals);
-		System.out.println(variance);
+		
+		
+		
 	}
 
 	@Override
 	public void run() {
+		System.out.println(measures);
+		Alarm temp = verificarTemperatura();
 		MySqlConnector.getInstance().saveMeasure(measure);
+		
 		//TODO implement stuff here
 	}
 	
+	private Alarm verificarTemperatura() {
+		double[] tempVals = measures.stream().mapToDouble(measure->measure.getValorTmpMedicao()).toArray();
+		double variance = varianceCheck(tempVals);
+		System.out.println(variance);
+		return null;
+	}
 	//TODO implement stuff here
 	private double varianceCheck(double[] vals) {
 		double variance = getInclination(vals[0], vals[1]);
