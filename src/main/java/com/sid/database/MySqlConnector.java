@@ -2,10 +2,13 @@ package com.sid.database;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Reader;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -46,14 +49,36 @@ public class MySqlConnector {
 				checkForUnsavedMeasures();
 				try {Thread.sleep(30000);} catch (InterruptedException e) {e.printStackTrace();}
 			}).start();
-		} catch (IOException | ClassNotFoundException e) {
-			System.err.println("User : -> " + user);
-			System.err.println("DBUrl : -> " + dbUrl);
-			System.err.println("Password : -> " + password);
+			
+			new Thread(() -> {
+				try(ServerSocket serverSocket = new ServerSocket(42000)){
+					while(true) {
+						Socket android = serverSocket.accept();
+						new Thread(() -> openAndroidCommunicationSocket(android));
+					}
+				} catch (IOException e) { e.printStackTrace(); }
+			}).start();
+			
+			
+		} catch (IOException | ClassNotFoundException | SQLException e) {
+			System.err.println("User : -> " + user+"\nDBUrl : -> " + dbUrl+"\nPassword : -> " + password);
 			e.printStackTrace();
-		} catch (SQLException e) {
-			System.err.println("Couldn't connect database " + dbUrl + "\nCredentials:\n\tUser: " + user
-					+ "\n\tPassword: " + password);
+		}
+	}
+
+
+
+
+
+
+	private void openAndroidCommunicationSocket(Socket android) {
+		try {
+			ObjectInputStream input = new ObjectInputStream(android.getInputStream());
+			ObjectOutputStream output = new ObjectOutputStream(android.getOutputStream());
+			
+			String inputSys = (String) input.readObject(); 
+			System.out.println(inputSys);
+		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
@@ -70,8 +95,6 @@ public class MySqlConnector {
 		ScriptRunner sr = new ScriptRunner(connection);
 		try (Reader reader = new BufferedReader(new FileReader("src/main/resources/schema.sql"))) {
 			sr.runScript(reader);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -180,20 +203,21 @@ public class MySqlConnector {
 		Statement stm = null;
 		try {
 			stm = connection.createStatement();
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusDays(1);
 			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " 
-					+ m.getValorHumMedicao() + " and TipoSensor = 'HUM' and DataHoraMedicao = '" + m.getDataHoraMedicao() + "';");
+					+ m.getValorHumMedicao() + " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[0] = hum.next();
 
 			ResultSet temp = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorTmpMedicao() + " and TipoSensor = 'TMP' and DataHoraMedicao = '" + m.getDataHoraMedicao() + "';");
+					+ m.getValorTmpMedicao() + " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[1] = temp.next();
 
 			ResultSet mov = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorMovMedicao() + " and TipoSensor = 'MOV' and DataHoraMedicao = '"+ m.getDataHoraMedicao() + "';");
+					+ m.getValorMovMedicao() + " and TipoSensor = 'MOV' and DataHoraMedicao = '"+ dataHoraMedicao + "';");
 			duplicates[2] = mov.next();
 
 			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorLumMedicao() + " and TipoSensor = 'LUM' and DataHoraMedicao =  '"+ m.getDataHoraMedicao() + "';");
+					+ m.getValorLumMedicao() + " and TipoSensor = 'LUM' and DataHoraMedicao =  '"+ dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -212,20 +236,6 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		//		getInstance().executeSchemaScript();
-//		for (int i = 13; i < 16; i++) {
-//			for (int j = 10; j < 60; j++) {
-//				Measure m = new Measure(new JSONObject(Map.of("_id",new JSONObject(Map.of("$oid","5ec4fe8002c13a79407b3bab")),
-//						"hum",38.30,
-//						"mov",0,
-//						"tmp",Double.parseDouble((Math.random()*90+10+"").substring(0,6)),
-//						"dat","25/5/2020",
-//						"sens","wifi",
-//						"tim","02:"+i+":"+j,
-//						"cell",3042)));
-//				System.out.println(m);
-//				getInstance().saveMeasure(m);
-//			}
-//		}
+		getInstance().executeSchemaScript();
 	}
 }
