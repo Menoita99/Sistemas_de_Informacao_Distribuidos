@@ -15,6 +15,18 @@ public class Alarm {
 	private LocalDateTime dataHoraMedicao;
 	private boolean controlo = false;
 	
+	public Alarm(double valorMedicao,String tipoSensor,LocalDateTime dataHoraMedicao,
+			double limite, String descricao, String extra, boolean controlo) {
+		this.limite = limite;
+		this.extra = extra;
+		this.controlo = controlo;
+		this.descricao = descricao;
+		this.valorMedicao = valorMedicao;
+		this.tipoSensor = tipoSensor;
+		this.dataHoraMedicao = dataHoraMedicao;
+	}
+	
+	
 	public Alarm(Measure measure, double limite, String descricao, String extra, boolean controlo) {
 		this.limite = limite;
 		this.extra = extra;
