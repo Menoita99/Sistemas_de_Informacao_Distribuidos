@@ -306,6 +306,7 @@ public class MySqlConnector {
 			}
 		}
 		return a;
+		
 	}
 	
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
