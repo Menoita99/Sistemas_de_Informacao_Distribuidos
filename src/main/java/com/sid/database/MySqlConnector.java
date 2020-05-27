@@ -309,7 +309,7 @@ public class MySqlConnector {
 	}
 	
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
-		Alarm a;
+		Alarm a = null;
 		while (tp.next())
 		{
 			String date_string = tp.getString("DataHoraMedicao");
@@ -323,9 +323,9 @@ public class MySqlConnector {
 			boolean control = tp.getBoolean("Controlo");
 			String extra = tp.getString("Extra");
 						
-			return add_alarm(date,tipo,value_med,limit,description,control,extra);
+			a= add_alarm(date,tipo,value_med,limit,description,control,extra);
 		}	
-		return null;
+		return a;
 	}
 
 	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description,
