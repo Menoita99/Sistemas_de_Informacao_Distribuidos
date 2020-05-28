@@ -46,7 +46,7 @@ public class MySqlConnector {
 			password = p.getProperty("mysql_password");
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			connection = DriverManager.getConnection(dbUrl, user, password);
-			
+
 			new Thread(() -> {
 				checkForUnsavedMeasures();
 				try {Thread.sleep(30000);} catch (InterruptedException e) {e.printStackTrace();}
@@ -131,7 +131,7 @@ public class MySqlConnector {
 			String query = "INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra)  VALUES ";
 			boolean modified = false;
 			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
-			
+
 			if (!duplicatesCheck[0]) {// HUMIDITY
 				query += (modified ? "," : "" )+"(" + m.getValorHumMedicao() + ", 'HUM' , '" + dataHoraMedicao + "', " + (m.isControloHum() ? 1 : 0) + ", '" + m.getExtraHum() + "')";
 				modified = true;
@@ -148,7 +148,7 @@ public class MySqlConnector {
 				query += (modified ? "," : "" )+"(" + m.getValorHumMedicao() + ", 'LUM' , '" + dataHoraMedicao + "', " + (m.isControloLum() ? 1 : 0) + ", '" + m.getExtraLum() + "')";
 				modified = true;
 			}
-			
+
 			if(modified) stm.executeUpdate(query);
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
 			System.out.println("Saved -> "+m);
@@ -212,10 +212,10 @@ public class MySqlConnector {
 
 		return duplicates;
 	}
-	
-	
-	
-	
+
+
+
+
 	public Round findRondaByDate(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
@@ -258,7 +258,7 @@ public class MySqlConnector {
 
 	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
 		round_list.add( new Round(user_mail,ronda_inicio,ronda_fim));
-		
+
 	}
 
 	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date){
@@ -288,11 +288,11 @@ public class MySqlConnector {
 				e.printStackTrace();
 			}
 		}
-	
+
 		return round_list;
 
 	}
-	
+
 	public Alarm findLastSevereAlarm(){
 		Statement stm = null;
 		Alarm a = null;
@@ -303,7 +303,7 @@ public class MySqlConnector {
 
 			ResultSet tp = stm.executeQuery(command);
 			a = reading_alert_table(tp);
-		
+
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -315,9 +315,9 @@ public class MySqlConnector {
 			}
 		}
 		return a;
-		
+
 	}
-	
+
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
 		Alarm a = null;
 		while (tp.next())
@@ -325,14 +325,14 @@ public class MySqlConnector {
 			String date_string = tp.getString("DataHoraMedicao");
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 			LocalDateTime date = LocalDateTime.parse(date_string,formatter);
-			
+
 			String tipo = tp.getString("TipoSensor");
 			Double value_med = tp.getDouble("ValorMedicao");
 			Double limit = tp.getDouble("Limite");
 			String description = tp.getString("Descricao");
 			boolean control = tp.getBoolean("Controlo");
 			String extra = tp.getString("Extra");
-						
+
 			a= add_alarm(date,tipo,value_med,limit,description,control,extra);
 		}	
 		return a;
@@ -353,7 +353,7 @@ public class MySqlConnector {
 
 			ResultSet tp = stm.executeQuery(command);
 			a = reading_alert_table(tp);
-		
+
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -366,20 +366,42 @@ public class MySqlConnector {
 		}
 		return a;
 	}
+	
+	public void insertAlarm(Alarm a) {
+		Statement stm = null;
+		try {
+			stm = connection.createStatement();
+			String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
+					+ "VALUES ( '"+a.getDataHoraMedicao()+"', '"+a.getTipoSensor()+"', '"+a.getValorMedicao()+"', '"+a.getLimite()+"', '"+a.getDescricao()+"','"+a.getControlo()+"' , '"+a.getExtra()+"');";
+			int tp = stm.executeUpdate(command);
+			System.out.println(tp);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	public static void main(String[] args) {
-		int year=2003;
+		int year=2019;
 		int month=12;
 		int dayOfMonth=31;
 		int hour=02;
-		
+
 		int minute=00;
 		LocalDateTime date = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
+		Alarm aa = new Alarm(40.2,"hum",LocalDateTime.now(), 40.2, "2", "1", true);
+		getInstance().insertAlarm(aa);
+		System.out.println("s");
+//		System.out.println(getInstance().findRondaByDate(date));
+//		System.out.println(getInstance().findAllRondasBiggerThen(date));
+//
+//		System.out.println(getInstance().findLastDangerAlarm());
+//		System.out.println(getInstance().findLastSevereAlarm());
 
-		System.out.println(getInstance().findRondaByDate(date));
-		System.out.println(getInstance().findAllRondasBiggerThen(date));
-
-		System.out.println(getInstance().findLastDangerAlarm());
-		System.out.println(getInstance().findLastSevereAlarm());
-
+	}
 }
