@@ -34,9 +34,6 @@ public class MySqlConnector {
 
 	private static Connection connection;
 
-
-
-
 	public MySqlConnector() {
 		String dbUrl = "";
 		String user = "";
@@ -49,13 +46,17 @@ public class MySqlConnector {
 			password = p.getProperty("mysql_password");
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			connection = DriverManager.getConnection(dbUrl, user, password);
-			
+
 			new Thread(() -> {
 				//TODO Process this measures if not processed (Maybe add a field processed in mongoDB collection document)
 				checkForUnsavedMeasures();
-				try {Thread.sleep(30000);} catch (InterruptedException e) {e.printStackTrace();}
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}).start();
-			
+
 			new Thread(() -> {
 				try(ServerSocket serverSocket = new ServerSocket(42000)){
 					while(true) {
@@ -64,12 +65,13 @@ public class MySqlConnector {
 						System.out.println("Connection achived with ip "+android.getInetAddress().getHostAddress());
 						new Thread(() -> resolveAndroidCommunicationSocket(android)).start();
 					}
-				} catch (IOException e) { e.printStackTrace(); }
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}).start();
-			
-			
+
 		} catch (IOException | ClassNotFoundException | SQLException e) {
-			System.err.println("User : -> " + user+"\nDBUrl : -> " + dbUrl+"\nPassword : -> " + password);
+			System.err.println("User : -> " + user + "\nDBUrl : -> " + dbUrl + "\nPassword : -> " + password);
 			e.printStackTrace();
 		}
 	}
@@ -99,11 +101,6 @@ public class MySqlConnector {
 		}
 	}
 
-
-
-
-
-
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -120,7 +117,7 @@ public class MySqlConnector {
 
 
 
-
+	
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
@@ -168,29 +165,34 @@ public class MySqlConnector {
 			String query = "INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra)  VALUES ";
 			boolean modified = false;
 			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
-			
+
 			if (!duplicatesCheck[0]) {// HUMIDITY
-				query += (modified ? "," : "" )+"(" + m.getValorHumMedicao() + ", 'HUM' , '" + dataHoraMedicao + "', " + (m.isControloHum() ? 1 : 0) + ", '" + m.getExtraHum() + "')";
+				query += (modified ? "," : "") + "(" + m.getValorHumMedicao() + ", 'HUM' , '" + dataHoraMedicao + "', "
+						+ (m.isControloHum() ? 1 : 0) + ", '" + m.getExtraHum() + "')";
 				modified = true;
 			}
 			if (!duplicatesCheck[1]) {// TEMPERATURE
-				query += (modified ? "," : "" )+"(" + m.getValorTmpMedicao() + ", 'TMP' , '" + dataHoraMedicao + "', " + (m.isControloTmp() ? 1 : 0) + ", '" + m.getExtraTmp() + "')";
+				query += (modified ? "," : "") + "(" + m.getValorTmpMedicao() + ", 'TMP' , '" + dataHoraMedicao + "', "
+						+ (m.isControloTmp() ? 1 : 0) + ", '" + m.getExtraTmp() + "')";
 				modified = true;
 			}
 			if (!duplicatesCheck[2]) {// MOVEMENT
-				query += (modified ? "," : "" )+"(" + m.getValorMovMedicao() + ", 'MOV' , '" + dataHoraMedicao + "', " + (m.isControloMov() ? 1 : 0) + ", '" + m.getExtraMov() + "')";
+				query += (modified ? "," : "") + "(" + m.getValorMovMedicao() + ", 'MOV' , '" + dataHoraMedicao + "', "
+						+ (m.isControloMov() ? 1 : 0) + ", '" + m.getExtraMov() + "')";
 				modified = true;
 			}
 			if (!duplicatesCheck[3]) {// LUMINOSITY
-				query += (modified ? "," : "" )+"(" + m.getValorHumMedicao() + ", 'LUM' , '" + dataHoraMedicao + "', " + (m.isControloLum() ? 1 : 0) + ", '" + m.getExtraLum() + "')";
+				query += (modified ? "," : "") + "(" + m.getValorLumMedicao() + ", 'LUM' , '" + dataHoraMedicao + "', "
+						+ (m.isControloLum() ? 1 : 0) + ", '" + m.getExtraLum() + "')";
 				modified = true;
 			}
-			
-			if(modified) stm.executeUpdate(query);
+			if (modified)
+				stm.executeUpdate(query);
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
-//			System.out.println("Saved -> "+m);
+			System.out.println("Saved -> " + m);
 		} catch (SQLException e) {
-			System.out.println("[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			System.out.println(
+					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
 			e.printStackTrace();
 		} finally {
 			try {
@@ -208,36 +210,42 @@ public class MySqlConnector {
 
 
 	private void checkForUnsavedMeasures() {
-		List<Measure> unsavedMeasures =  MongoConnector.getInstance().findAllMeasures();
+		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
 		for (Measure measure : unsavedMeasures)
 			saveMeasure(measure);
 	}
-
-
-
-
-
+	
+	
+	
+	
+	
+	
+	
 
 	public boolean[] checkForDuplicates(Measure m) {
 		boolean[] duplicates = new boolean[4];
 		Statement stm = null;
 		try {
 			stm = connection.createStatement();
-			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusDays(1);
-			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " 
-					+ m.getValorHumMedicao() + " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
+			ResultSet hum = stm
+					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
+							+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[0] = hum.next();
 
-			ResultSet temp = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorTmpMedicao() + " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+			ResultSet temp = stm
+					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
+							+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[1] = temp.next();
 
-			ResultSet mov = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorMovMedicao() + " and TipoSensor = 'MOV' and DataHoraMedicao = '"+ dataHoraMedicao + "';");
+			ResultSet mov = stm
+					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
+							+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[2] = mov.next();
 
-			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = "
-					+ m.getValorLumMedicao() + " and TipoSensor = 'LUM' and DataHoraMedicao =  '"+ dataHoraMedicao + "';");
+			ResultSet lum = stm
+					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
+							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -248,6 +256,9 @@ public class MySqlConnector {
 				e.printStackTrace();
 			}
 		}
+
+		for (Boolean b : duplicates)
+			System.out.println(b);
 
 		return duplicates;
 	}
@@ -261,17 +272,15 @@ public class MySqlConnector {
 		round_list.clear();
 		Statement stm = null;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		String data = date.format(formatter);		
+		String data = date.format(formatter);
 		try {
-			//vai buscar a tabela da ronda planeada e extra
+			// vai buscar a tabela da ronda planeada e extra
 			stm = connection.createStatement();
-			String command = "(SELECT * FROM sid_2.ronda_extra  where ronda_inicio=\"" + data + "\")"
-					+ "Union "
+			String command = "(SELECT * FROM sid_2.ronda_extra  where ronda_inicio=\"" + data + "\")" + "Union "
 					+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\")";
 
 			ResultSet ronda_planeada_extra = stm.executeQuery(command);
 			reading_rounds_table(ronda_planeada_extra);
-
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -291,16 +300,15 @@ public class MySqlConnector {
 
 
 	private void reading_rounds_table(ResultSet rp) throws SQLException {
-		//read line at a time
-		while (rp.next())
-		{
+		// read line at a time
+		while (rp.next()) {
 			String user_mail = rp.getString("email");
 			String ronda_inicio = rp.getString("ronda_inicio");
 			String ronda_fim = rp.getString("ronda_inicio");
 
-			add_round(user_mail,ronda_inicio,ronda_fim);
+			add_round(user_mail, ronda_inicio, ronda_fim);
 
-		}		
+		}
 	}
 
 
@@ -309,7 +317,8 @@ public class MySqlConnector {
 
 
 	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
-		round_list.add( new Round(user_mail,ronda_inicio,ronda_fim));
+		round_list.add(new Round(user_mail, ronda_inicio, ronda_fim));
+
 	}
 
 
@@ -325,15 +334,13 @@ public class MySqlConnector {
 		String data = date.format(formatter);
 
 		try {
-			//vai buscar a tabela da ronda planeada e extra
+			// vai buscar a tabela da ronda planeada e extra
 			stm = connection.createStatement();
-			String command = "(SELECT * FROM sid_2.ronda_extra  where ronda_inicio >=\"" + data + "\")"
-					+ "Union "
+			String command = "(SELECT * FROM sid_2.ronda_extra  where ronda_inicio >=\"" + data + "\")" + "Union "
 					+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio >=\"" + data + "\")";
 
 			ResultSet ronda_planeada_extra = stm.executeQuery(command);
 			reading_rounds_table(ronda_planeada_extra);
-
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -356,13 +363,12 @@ public class MySqlConnector {
 		Statement stm = null;
 		Alarm a = null;
 		try {
-			//vai buscar a tabela da ronda planeada e extra
+			// vai buscar a tabela da ronda planeada e extra
 			stm = connection.createStatement();
 			String command = "SELECT * FROM sid_2.alerta where Controlo = 0 and DataHoraMedicao=(Select max(DataHoraMedicao) from sid_2.alerta);";
 
 			ResultSet tp = stm.executeQuery(command);
 			a = reading_alert_table(tp);
-		
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -383,23 +389,28 @@ public class MySqlConnector {
 
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
 		Alarm a = null;
-		while (tp.next())
-		{
+		while (tp.next()) {
 			String date_string = tp.getString("DataHoraMedicao");
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-			LocalDateTime date = LocalDateTime.parse(date_string,formatter);
-			
+			LocalDateTime date = LocalDateTime.parse(date_string, formatter);
+
 			String tipo = tp.getString("TipoSensor");
 			Double value_med = tp.getDouble("ValorMedicao");
 			Double limit = tp.getDouble("Limite");
 			String description = tp.getString("Descricao");
 			boolean control = tp.getBoolean("Controlo");
 			String extra = tp.getString("Extra");
-						
-			a= add_alarm(date,tipo,value_med,limit,description,control,extra);
-		}	
+
+			a = add_alarm(date, tipo, value_med, limit, description, control, extra);
+		}
 		return a;
 	}
+	
+	
+	
+	
+	
+	
 
 
 
@@ -419,13 +430,12 @@ public class MySqlConnector {
 		Statement stm = null;
 		Alarm a = null;
 		try {
-			//vai buscar a tabela da ronda planeada e extra
+			// vai buscar a tabela da ronda planeada e extra
 			stm = connection.createStatement();
 			String command = "SELECT * FROM sid_2.alerta where Controlo = 1 and DataHoraMedicao=(Select max(DataHoraMedicao) from sid_2.alerta);";
 
 			ResultSet tp = stm.executeQuery(command);
 			a = reading_alert_table(tp);
-		
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -438,6 +448,11 @@ public class MySqlConnector {
 		}
 		return a;
 	}
+	
+	
+	
+	
+	
 
 
 
@@ -445,13 +460,13 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		int year=2003;
-		int month=12;
-		int dayOfMonth=31;
-		int hour=02;
-		
-		int minute=00;
-		LocalDateTime date = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
+		int year = 2003;
+		int month = 12;
+		int dayOfMonth = 31;
+		int hour = 02;
+
+		int minute = 00;
+		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
 
 		System.out.println(getInstance().findRondaByDate(date));
 		System.out.println(getInstance().findAllRondasBiggerThen(date));
