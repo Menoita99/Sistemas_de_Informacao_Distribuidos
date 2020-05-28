@@ -34,9 +34,9 @@ public class MysqlSystem  implements Serializable{
 			limiteTemperatura = (double) systemValues.get(0);
 			limiteHumidade = (double) systemValues.get(1);
 			limiteLuminosidade = (double) systemValues.get(2);
-//			margemTemperatura = (double) systemValues.get(3);
-//			margemHumidade = (double) systemValues.get(4);
-//			margemLuminosidade = (double) systemValues.get(5);
+			margemTemperatura = (double) systemValues.get(3);
+			margemHumidade = (double) systemValues.get(4);
+			margemLuminosidade = (double) systemValues.get(5);
 		}
 	}
 

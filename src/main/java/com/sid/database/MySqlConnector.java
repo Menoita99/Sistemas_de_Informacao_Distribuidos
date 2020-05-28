@@ -4,11 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Reader;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -21,7 +17,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.json.JSONObject;
 
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
@@ -50,24 +45,7 @@ public class MySqlConnector {
 			new Thread(() -> {
 				//TODO Process this measures if not processed (Maybe add a field processed in mongoDB collection document)
 				checkForUnsavedMeasures();
-				try {
-					Thread.sleep(30000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}).start();
-
-			new Thread(() -> {
-				try(ServerSocket serverSocket = new ServerSocket(42000)){
-					while(true) {
-						System.out.println("Looking for Android connections");
-						Socket android = serverSocket.accept();
-						System.out.println("Connection achived with ip "+android.getInetAddress().getHostAddress());
-						new Thread(() -> resolveAndroidCommunicationSocket(android)).start();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				try { Thread.sleep(30000); } catch (InterruptedException e) { e.printStackTrace(); }
 			}).start();
 
 		} catch (IOException | ClassNotFoundException | SQLException e) {
@@ -77,30 +55,11 @@ public class MySqlConnector {
 	}
 
 
-
-
-
-
-	private void resolveAndroidCommunicationSocket(Socket android) {
-		try {
-			ObjectInputStream input = new ObjectInputStream(android.getInputStream());
-			ObjectOutputStream output = new ObjectOutputStream(android.getOutputStream());
-			
-			//RECEBES ISTO
-			//{"limiteLuminosidade":20,"margemLuminosidade":20,"limiteHumidade":30,"margemTemperatura":0,"limiteTemperatura":50,"margemHumidade":0}
-			String inputSys = (String) input.readObject(); 
-			
-			JSONObject modifiedObj = new JSONObject(inputSys);
-			
-			System.out.println("Received -> "+inputSys);
-			
-			//retorna um JSONObject.toString();
-			output.writeObject(modifiedObj.toString());
-		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
+	
+	
+	
+	
+	
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -139,6 +98,9 @@ public class MySqlConnector {
 			output.add(rs.getDouble("LimiteTemperatura"));
 			output.add(rs.getDouble("LimiteHumidade"));
 			output.add(rs.getDouble("LimiteLuminosidade"));
+			output.add(rs.getDouble("margem_temperatura"));
+			output.add(rs.getDouble("margem_humidade"));
+			output.add(rs.getDouble("margem_luminosidade"));
 		} catch (SQLException e) {
 			System.err.println("Something happened while fecthing Sistema values\nVerify if Sistema has values");
 			e.printStackTrace();
@@ -256,10 +218,6 @@ public class MySqlConnector {
 				e.printStackTrace();
 			}
 		}
-
-		for (Boolean b : duplicates)
-			System.out.println(b);
-
 		return duplicates;
 	}
 
@@ -406,11 +364,6 @@ public class MySqlConnector {
 		return a;
 	}
 	
-	
-	
-	
-	
-	
 
 
 
@@ -449,10 +402,6 @@ public class MySqlConnector {
 		return a;
 	}
 	
-	
-	
-	
-	
 
 
 
@@ -460,18 +409,7 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		int year = 2003;
-		int month = 12;
-		int dayOfMonth = 31;
-		int hour = 02;
-
-		int minute = 00;
-		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
-
-		System.out.println(getInstance().findRondaByDate(date));
-		System.out.println(getInstance().findAllRondasBiggerThen(date));
-
-		System.out.println(getInstance().findLastDangerAlarm());
-		System.out.println(getInstance().findLastSevereAlarm());
+//		getInstance().getSystemValues().forEach(System.out::println);
+		getInstance().executeSchemaScript();
 	}
 }

@@ -49,7 +49,7 @@ public class Processor {
 	public void Process() {
 		while(true) {
 			JSONObject jobj = mongoConnector.read();
-//			System.out.println("Read-> "+jobj);
+			System.out.println("Read-> "+jobj);
 			try {
 				addMeasure(new Measure(jobj));
 				workers.submit(new Task(new ArrayList<Measure>(measures)));
