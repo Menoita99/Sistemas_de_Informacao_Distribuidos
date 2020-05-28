@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
+import org.json.JSONObject;
 
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
@@ -29,7 +30,7 @@ import com.sid.models.Round;
 public class MySqlConnector {
 
 	private static MySqlConnector INSTANCE;
-	private ArrayList<Round> round_list;
+	private ArrayList<Round> round_list = new ArrayList<>();
 
 	private static Connection connection;
 
@@ -37,7 +38,6 @@ public class MySqlConnector {
 
 
 	public MySqlConnector() {
-		round_list = new ArrayList<>();
 		String dbUrl = "";
 		String user = "";
 		String password = "";
@@ -51,6 +51,7 @@ public class MySqlConnector {
 			connection = DriverManager.getConnection(dbUrl, user, password);
 			
 			new Thread(() -> {
+				//TODO Process this measures if not processed (Maybe add a field processed in mongoDB collection document)
 				checkForUnsavedMeasures();
 				try {Thread.sleep(30000);} catch (InterruptedException e) {e.printStackTrace();}
 			}).start();
@@ -58,8 +59,10 @@ public class MySqlConnector {
 			new Thread(() -> {
 				try(ServerSocket serverSocket = new ServerSocket(42000)){
 					while(true) {
+						System.out.println("Looking for Android connections");
 						Socket android = serverSocket.accept();
-						new Thread(() -> openAndroidCommunicationSocket(android));
+						System.out.println("Connection achived with ip "+android.getInetAddress().getHostAddress());
+						new Thread(() -> resolveAndroidCommunicationSocket(android)).start();
 					}
 				} catch (IOException e) { e.printStackTrace(); }
 			}).start();
@@ -76,13 +79,21 @@ public class MySqlConnector {
 
 
 
-	private void openAndroidCommunicationSocket(Socket android) {
+	private void resolveAndroidCommunicationSocket(Socket android) {
 		try {
 			ObjectInputStream input = new ObjectInputStream(android.getInputStream());
 			ObjectOutputStream output = new ObjectOutputStream(android.getOutputStream());
 			
+			//RECEBES ISTO
+			//{"limiteLuminosidade":20,"margemLuminosidade":20,"limiteHumidade":30,"margemTemperatura":0,"limiteTemperatura":50,"margemHumidade":0}
 			String inputSys = (String) input.readObject(); 
-			System.out.println(inputSys);
+			
+			JSONObject modifiedObj = new JSONObject(inputSys);
+			
+			System.out.println("Received -> "+inputSys);
+			
+			//retorna um JSONObject.toString();
+			output.writeObject(modifiedObj.toString());
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -109,11 +120,13 @@ public class MySqlConnector {
 
 
 
+
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
 		return INSTANCE;
 	}
+
 
 
 
@@ -141,6 +154,7 @@ public class MySqlConnector {
 		}
 		return output;
 	}
+
 
 
 
@@ -174,7 +188,7 @@ public class MySqlConnector {
 			
 			if(modified) stm.executeUpdate(query);
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
-			System.out.println("Saved -> "+m);
+//			System.out.println("Saved -> "+m);
 		} catch (SQLException e) {
 			System.out.println("[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
 			e.printStackTrace();
@@ -187,6 +201,7 @@ public class MySqlConnector {
 		}
 		return false;
 	}
+
 
 
 
@@ -236,10 +251,12 @@ public class MySqlConnector {
 
 		return duplicates;
 	}
-	
-	
-	
-	
+
+
+
+
+
+
 	public Round findRondaByDate(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
@@ -267,6 +284,12 @@ public class MySqlConnector {
 		}
 		return round_list.get(0);
 	}
+
+
+
+
+
+
 	private void reading_rounds_table(ResultSet rp) throws SQLException {
 		//read line at a time
 		while (rp.next())
@@ -280,10 +303,19 @@ public class MySqlConnector {
 		}		
 	}
 
+
+
+
+
+
 	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
 		round_list.add( new Round(user_mail,ronda_inicio,ronda_fim));
-		
 	}
+
+
+
+
+
 
 	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date){
 		round_list.clear();
@@ -312,11 +344,14 @@ public class MySqlConnector {
 				e.printStackTrace();
 			}
 		}
-	
 		return round_list;
-
 	}
-	
+
+
+
+
+
+
 	public Alarm findLastSevereAlarm(){
 		Statement stm = null;
 		Alarm a = null;
@@ -339,9 +374,13 @@ public class MySqlConnector {
 			}
 		}
 		return a;
-		
 	}
-	
+
+
+
+
+
+
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
 		Alarm a = null;
 		while (tp.next())
@@ -362,10 +401,19 @@ public class MySqlConnector {
 		return a;
 	}
 
-	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description,
-			boolean control, String extra) {
-		return new Alarm(value_med,tipo,data,limit,description,extra,control);
+
+
+
+
+
+	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description, boolean control, String extra) {
+		return new Alarm(value_med,limit,tipo,extra,description,data,control);
 	}
+
+
+
+
+
 
 	public Alarm findLastDangerAlarm(){
 		Statement stm = null;
@@ -391,6 +439,11 @@ public class MySqlConnector {
 		return a;
 	}
 
+
+
+
+
+
 	public static void main(String[] args) {
 		int year=2003;
 		int month=12;
@@ -405,5 +458,5 @@ public class MySqlConnector {
 
 		System.out.println(getInstance().findLastDangerAlarm());
 		System.out.println(getInstance().findLastSevereAlarm());
-
+	}
 }

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import com.sid.models.Measure;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class TemperatureTask extends Task {
 
 	public TemperatureTask(ArrayList<Measure> measuresCopy) {

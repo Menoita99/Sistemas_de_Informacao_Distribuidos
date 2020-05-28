@@ -19,8 +19,6 @@ public class Processor {
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	
-	//Atenção que ao iterar remover ou adicionar pode haver um erro de concurrencia.
-	//Irei implementar um mecanismo de locks para evitar este problema
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
 
 	//connectors
@@ -51,7 +49,7 @@ public class Processor {
 	public void Process() {
 		while(true) {
 			JSONObject jobj = mongoConnector.read();
-			System.out.println("Read-> "+jobj);
+//			System.out.println("Read-> "+jobj);
 			try {
 				addMeasure(new Measure(jobj));
 				workers.submit(new Task(new ArrayList<Measure>(measures)));
