@@ -1,6 +1,7 @@
 package com.sid.models;
 
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.sid.database.MySqlConnector;
@@ -8,13 +9,18 @@ import com.sid.database.MySqlConnector;
 import lombok.Data;
 
 @Data
-public class MysqlSystem {
+public class MysqlSystem  implements Serializable{
 
-	private double limiteTemperatura = 100;
-	private double limiteHumidade = 100;
-	private double limiteLuminosidade = 1000;
+    private static final long serialVersionUID = 1L;
 
-	private static MysqlSystem INSTANCE;
+    private double limiteTemperatura;
+    private double limiteHumidade;
+    private double limiteLuminosidade;
+    private double margemTemperatura;
+    private double margemHumidade;
+    private double margemLuminosidade;
+
+    private static MysqlSystem INSTANCE;
 
 
 	
@@ -28,6 +34,9 @@ public class MysqlSystem {
 			limiteTemperatura = (double) systemValues.get(0);
 			limiteHumidade = (double) systemValues.get(1);
 			limiteLuminosidade = (double) systemValues.get(2);
+			margemTemperatura = (double) systemValues.get(3);
+			margemHumidade = (double) systemValues.get(4);
+			margemLuminosidade = (double) systemValues.get(5);
 		}
 	}
 

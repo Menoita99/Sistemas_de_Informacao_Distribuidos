@@ -3,9 +3,11 @@ package com.sid.models;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class Alarm {
 
 	private double valorMedicao;
@@ -82,4 +84,5 @@ public class Alarm {
 			return 1;
 		return 0;
 	}
+
 }
