@@ -55,11 +55,11 @@ public class MySqlConnector {
 	}
 
 
-	
-	
-	
-	
-	
+
+
+
+
+
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -76,7 +76,7 @@ public class MySqlConnector {
 
 
 
-	
+
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
@@ -178,13 +178,13 @@ public class MySqlConnector {
 		for (Measure measure : unsavedMeasures)
 			saveMeasure(measure);
 	}
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
 
 	public boolean[] checkForDuplicates(Measure m) {
 		boolean[] duplicates = new boolean[4];
@@ -194,22 +194,22 @@ public class MySqlConnector {
 			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
 			ResultSet hum = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
-							+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+					+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[0] = hum.next();
 
 			ResultSet temp = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
-							+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+					+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[1] = temp.next();
 
 			ResultSet mov = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
-							+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+					+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[2] = mov.next();
 
 			ResultSet lum = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
-							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
+					+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -333,7 +333,7 @@ public class MySqlConnector {
 		return a;
 
 	}
-}
+
 
 
 
@@ -360,7 +360,7 @@ public class MySqlConnector {
 		}
 		return a;
 	}
-	
+
 
 
 
@@ -393,7 +393,7 @@ public class MySqlConnector {
 		}
 		return a;
 	}
-	
+
 	public void insertAlarm(Alarm a) {
 		Statement stm = null;
 		try {
@@ -411,8 +411,8 @@ public class MySqlConnector {
 				e.printStackTrace();
 			}
 		}
-	}
 
+	}
 	public static void main(String[] args) {
 		int year=2019;
 		int month=12;
@@ -424,13 +424,14 @@ public class MySqlConnector {
 		Alarm aa = new Alarm(40.2,"hum",LocalDateTime.now(), 40.2, "2", "1", true);
 		getInstance().insertAlarm(aa);
 		System.out.println("s");
-//		System.out.println(getInstance().findRondaByDate(date));
-//		System.out.println(getInstance().findAllRondasBiggerThen(date));
-//
-//		System.out.println(getInstance().findLastDangerAlarm());
-//		System.out.println(getInstance().findLastSevereAlarm());
+		//		System.out.println(getInstance().findRondaByDate(date));
+		//		System.out.println(getInstance().findAllRondasBiggerThen(date));
+		//
+		//		System.out.println(getInstance().findLastDangerAlarm());
+		//		System.out.println(getInstance().findLastSevereAlarm());
 
 
 
 
+	}
 }
