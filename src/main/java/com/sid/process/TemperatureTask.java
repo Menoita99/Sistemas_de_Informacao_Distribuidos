@@ -6,8 +6,6 @@ import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.TemperatureAlarm;
 
-
-
 public class TemperatureTask extends Task {
 
 	public TemperatureTask(ArrayList<Measure> measuresCopy) {

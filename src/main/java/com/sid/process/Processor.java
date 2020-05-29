@@ -19,8 +19,6 @@ public class Processor {
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	
-	//Atenção que ao iterar remover ou adicionar pode haver um erro de concurrencia.
-	//Irei implementar um mecanismo de locks para evitar este problema
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
 
 	//connectors
