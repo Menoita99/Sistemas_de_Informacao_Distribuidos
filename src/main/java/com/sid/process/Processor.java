@@ -57,7 +57,7 @@ public class Processor {
 			System.out.println("Read-> "+jobj);
 			try {
 				addMeasure(new Measure(jobj));
-				workers.submit(new Task(new ArrayList<Measure>(measures)));
+				workers.submit(new MovementTask(new ArrayList<Measure>(measures)));
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -94,11 +94,16 @@ public class Processor {
 	
 	public Round setNextOrCurrentRound(LocalDateTime time) {
 		
-		if( isTimeTocheckRounds() && !nextOrCurrentRound.getRound_begin().isAfter(time) ) {
-		 nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
-		 lastTimeChecked = LocalDateTime.now();
-		 return nextOrCurrentRound;
-		 
+		
+		if(nextOrCurrentRound== null || (isTimeTocheckRounds() && !nextOrCurrentRound.getRound_begin().isAfter(time) )) {
+			
+			System.out.println("getting next round");
+			 nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
+			 lastTimeChecked = LocalDateTime.now();
+			 lastMovement= time;
+			 System.out.println("next round: " + nextOrCurrentRound);
+			 return nextOrCurrentRound;
+			 
 		}else if(nextOrCurrentRound.getRound_begin().isAfter(time) ) //in case an older message pops up is it worth it?
 			return  mysqlConnector.findNextOrCurrentRound(time);
 		
@@ -108,10 +113,10 @@ public class Processor {
 	}
 	public boolean isTimeTocheckRounds() {
 		
-		LocalDateTime limit= lastTimeChecked.plusMinutes(MINUTES_TO_RECHECK_ROUNDS);
-		LocalDateTime now = LocalDateTime.now();
-		return now.isAfter( limit ) || now.isEqual(limit) ;
-		
+			LocalDateTime limit= lastTimeChecked.plusMinutes(MINUTES_TO_RECHECK_ROUNDS);
+			LocalDateTime now = LocalDateTime.now();
+			return now.isAfter( limit ) || now.isEqual(limit) ;
+	
 	}
 	
 	public void setLastTimeChecked() {
