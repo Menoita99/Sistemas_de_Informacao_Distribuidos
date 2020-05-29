@@ -30,18 +30,29 @@ public class Round {
 	public LocalDateTime getRound_begin() {
 		return round_begin;
 	}
+
 	public void setRound_begin(LocalDateTime round_begin) {
 		this.round_begin = round_begin;
 	}
 	public LocalDateTime getRound_end() {
 		return round_end;
 	}
+	public boolean isCurrentRound(LocalDateTime time) {
+		
+		if( (round_begin.isBefore(time) || round_begin.isEqual(time) ) &&
+			(round_end.isAfter(time) || round_end.isEqual(time) )	   )
+			return true;
+		else
+			return false;
+	}
 	public void setRound_end(LocalDateTime round_end) {
 		this.round_end = round_end;
 	}
 	@Override
 	public String toString() {
-		return "Round [email_user=" + email_user + ", round_begin=" + round_begin + ", round_end=" + round_end + "]";
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+		return "Round [email_user=" + email_user + ", round_begin=" + round_begin.format(formatter) + ", round_end=" + round_end.format(formatter) + "]";
 	}
 
 }
