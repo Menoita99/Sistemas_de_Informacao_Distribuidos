@@ -1,7 +1,5 @@
 package com.sid.process;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.json.JSONObject;
@@ -10,7 +8,6 @@ import com.sid.database.MongoConnector;
 import com.sid.database.MySqlConnector;
 import com.sid.models.Measure;
 import com.sid.models.MysqlSystem;
-import com.sid.models.Round;
 import com.sid.util.ThreadPool;
 
 import javafx.collections.FXCollections;
@@ -21,7 +18,6 @@ import lombok.Data;
 public class Processor {
 
 	private static Processor INSTANCE; //this is used by performance monitor
-	private final static int MINUTES_TO_RECHECK_ROUNDS = 10;
 	
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
 
@@ -32,11 +28,6 @@ public class Processor {
 	private MysqlSystem mysqlSystem;
 	
 	private ThreadPool workers;
-	
-	//variables to help check movement
-	private Round nextOrCurrentRound;
-	private LocalDateTime lastTimeChecked;
-	private LocalDateTime lastMovement;
 
 	
 	
@@ -47,7 +38,11 @@ public class Processor {
 		mysqlSystem = MysqlSystem.getInstance();
 		workers = new ThreadPool(10);
 	}
-		
+
+
+	
+	
+	
 	/**
 	 * Main loop
 	 */
@@ -57,7 +52,7 @@ public class Processor {
 			System.out.println("Read-> "+jobj);
 			try {
 				addMeasure(new Measure(jobj));
-				workers.submit(new MovementTask(new ArrayList<Measure>(measures)));
+				workers.submit(new Task(new ArrayList<Measure>(measures)));
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -88,51 +83,5 @@ public class Processor {
 
 	public void close() {
 		System.exit(0);
-	}
-	
-
-	
-	public Round setNextOrCurrentRound(LocalDateTime time) {
-		
-		
-		if(nextOrCurrentRound== null || (isTimeTocheckRounds() && !nextOrCurrentRound.getRound_begin().isAfter(time) )) {
-			
-			System.out.println("getting next round");
-			 nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
-			 lastTimeChecked = LocalDateTime.now();
-			 lastMovement= time;
-			 System.out.println("next round: " + nextOrCurrentRound);
-			 return nextOrCurrentRound;
-			 
-		}else if(nextOrCurrentRound.getRound_begin().isAfter(time) ) //in case an older message pops up is it worth it?
-			return  mysqlConnector.findNextOrCurrentRound(time);
-		
-		return nextOrCurrentRound;
-			
-		
-	}
-	public boolean isTimeTocheckRounds() {
-		
-			LocalDateTime limit= lastTimeChecked.plusMinutes(MINUTES_TO_RECHECK_ROUNDS);
-			LocalDateTime now = LocalDateTime.now();
-			return now.isAfter( limit ) || now.isEqual(limit) ;
-	
-	}
-	
-	public void setLastTimeChecked() {
-		lastTimeChecked = LocalDateTime.now();
-	}
-	public LocalDateTime getLastMovement() {
-		return lastMovement;
-	}
-	public void setLastMovement(LocalDateTime time) {
-		lastMovement= time;
-		
-	}
-	
-
-	protected double getTempLimit() {
-		return mysqlSystem.getLimiteTemperatura();
-
 	}
 }

@@ -58,7 +58,6 @@ public class Alarm {
 		dataHoraMedicao = measure.getDataHoraMedicao();
 	}
 
-
 	public double getValorMedicao() {
 		return this.valorMedicao;
 	}
@@ -85,4 +84,5 @@ public class Alarm {
 			return 1;
 		return 0;
 	}
+
 }
