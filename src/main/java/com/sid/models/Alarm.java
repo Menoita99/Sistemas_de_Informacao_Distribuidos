@@ -42,4 +42,5 @@ public class Alarm {
 		tipoSensor = measure.getTipoSensor();
 		dataHoraMedicao = measure.getDataHoraMedicao();
 	}
+	
 }

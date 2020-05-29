@@ -86,4 +86,8 @@ public class Processor {
 	public void close() {
 		System.exit(0);
 	}
+	
+	protected double getTempLimit() {
+		return mysqlSystem.getLimiteTemperatura();
+	}
 }
