@@ -7,7 +7,7 @@ import com.sid.models.Measure;
 import com.sid.models.Round;
 
 public class MovementTask extends Task {
-		private static final int TIME_TO_WORRY_MOV = 10;
+		private static final int TIME_TO_WORRY_MOV = 1;
 
 		private ArrayList<Measure> measures;
 
@@ -19,9 +19,12 @@ public class MovementTask extends Task {
 	public MovementTask(ArrayList<Measure> measuresCopy) {
 		super(measuresCopy);
 		process = getProcess();
+		System.out.println("before initializing");
 		nextOrCurrentRound = process.getNextOrCurrentRound();
 		lastTimeChecked = process.getLastTimeChecked();
 		lastMovement = process.getLastMovement();
+		System.out.println("after initializing");
+
 		measures = getMeasures();
 		}
 	@Override
@@ -39,23 +42,25 @@ private void verifyMomentValues() {
 		
 		if( !isCurrentRound(time)) {
 			nextOrCurrentRound = process.setNextOrCurrentRound(time);
-			System.out.println("geting round");
-			
+		
 		}
 		//se estiver a occorer ronda
-		else if(isCurrentRound(time) && nextOrCurrentRound!= null) {
-				//se houver movimento
+		if(nextOrCurrentRound!= null && isCurrentRound(time) ) {
+			System.out.println("there is a round right now");
+			
+			//se houver movimento
 			if(measures.get(0).getValorMovMedicao() == 1.0)
-				process.setLastTimeChecked();
+				process.setLastMovement(time);
 			//se nao houver movimento por mais de TIME_TO_WORRY  minutos
-			else if( time.isAfter(lastTimeChecked.plusMinutes(TIME_TO_WORRY_MOV)) ) {
+			else if( time.isAfter(lastMovement.plusMinutes(TIME_TO_WORRY_MOV)) ) {
 				System.out.println("ALERTA TIME TO WORRY");
 			}
-		
+			System.out.println("last movement " + lastMovement + "Time to worry " + lastMovement.plusMinutes(TIME_TO_WORRY_MOV) + "time now "+ time);
 				    	 
 			
 		//se não estiver a ocorrer ronda	
 		}else if (nextOrCurrentRound!= null) {
+			System.out.println("no round right now");
 			
 			if(measures.get(0).getValorMovMedicao() == 1.0) {
 				boolean send_alert = true;
