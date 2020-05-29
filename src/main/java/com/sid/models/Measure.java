@@ -62,8 +62,7 @@ public class Measure {
 			extraMov = "Could not find value mov";
 		}
 	}
-
-
+	
 
 
 
