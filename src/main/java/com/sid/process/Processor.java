@@ -122,6 +122,9 @@ public class Processor {
 	}
 	public void setLastMovement(LocalDateTime time) {
 		lastMovement= time;
+		
+	}
+	
 
 	protected double getTempLimit() {
 		return mysqlSystem.getLimiteTemperatura();
