@@ -1,5 +1,6 @@
 package com.sid.process;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.json.JSONObject;
@@ -8,6 +9,7 @@ import com.sid.database.MongoConnector;
 import com.sid.database.MySqlConnector;
 import com.sid.models.Measure;
 import com.sid.models.MysqlSystem;
+import com.sid.models.Round;
 import com.sid.util.ThreadPool;
 
 import javafx.collections.FXCollections;
@@ -28,6 +30,11 @@ public class Processor {
 	private MysqlSystem mysqlSystem;
 	
 	private ThreadPool workers;
+	
+	//variables to help check movement
+	private Round nextRound;
+	private LocalDateTime lastTimeChecked;
+	private LocalDateTime lastMovement;
 
 	
 	
