@@ -59,7 +59,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloMov = false;
-			extraMov = "Could not found value mov";
+			extraMov = "Could not find value mov";
 		}
 	}
 
@@ -74,7 +74,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloLum = false;
-			extraLum = "Could not found value cell";
+			extraLum = "Could not find value cell";
 		}
 	}
 
@@ -89,7 +89,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloHum = false;
-			extraHum = "Could not found value hum";
+			extraHum = "Could not find value hum";
 		}
 	}
 
@@ -104,7 +104,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloTmp = false;
-			extraTmp = "Could not found value tmp";
+			extraTmp = "Could not find value tmp";
 		}
 	}
 
