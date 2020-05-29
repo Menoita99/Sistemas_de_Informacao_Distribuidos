@@ -421,11 +421,11 @@ public class MySqlConnector {
 			stm = connection.createStatement();
 			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_inicio=\"" + data + "\" || "
 					+ "ronda_inicio >\"" + data + "\" || "
-					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
+					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio <\"" + data + "\") "
 							+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) "
 				             + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\" || "
 				             + "ronda_inicio >\"" + data + "\" || "
-				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
+				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio <\"" + data + "\") "
 									+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) )"
 									+ ")" ;
 
@@ -463,22 +463,22 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		int year=2019;
-		int month=12;
-		int dayOfMonth=31;
-		int hour=02;
-
-		int minute=00;
-		LocalDateTime date = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
-		Alarm aa = new Alarm(40.2,"hum",LocalDateTime.now(), 40.2, "2", "1", true);
-		getInstance().insertAlarm(aa);
-		System.out.println("s");
+//		int year=2019;
+//		int month=12;
+//		int dayOfMonth=31;
+//		int hour=02;
+//
+//		int minute=00;
+//		LocalDateTime date = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
+//		Alarm aa = new Alarm(40.2,"hum",LocalDateTime.now(), 40.2, "2", "1", true);
+//		getInstance().insertAlarm(aa);
+//		System.out.println("s");
 		//		System.out.println(getInstance().findRondaByDate(date));
 		//		System.out.println(getInstance().findAllRondasBiggerThen(date));
 		//
 		//		System.out.println(getInstance().findLastDangerAlarm());
 		//		System.out.println(getInstance().findLastSevereAlarm());
-		//System.out.println(getInstance().findNextOrCurrentRound( LocalDateTime.parse( "2020-05-25 20:31:00",DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") ) ));
+		System.out.println(getInstance().findNextOrCurrentRound( LocalDateTime.parse( "2020-05-29 21:37:00",DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") ) ));
 
 
 
