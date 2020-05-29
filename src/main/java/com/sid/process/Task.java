@@ -1,10 +1,12 @@
 package com.sid.process;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import com.sid.database.MySqlConnector;
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
+import com.sid.models.Round;
 
 import lombok.Data;
 
@@ -14,10 +16,13 @@ public class Task implements Runnable {
 	private ArrayList<Measure> measures;
 	private Measure measure;
 	private Processor process = Processor.getInstance();
+	
+	
 
 	public Task(ArrayList<Measure> measuresCopy) {
 		this.measures = measuresCopy;
 		this.measure = measures.get(measures.size()-1);
+		
 		// Debug
 		
 		
@@ -29,6 +34,7 @@ public class Task implements Runnable {
 		System.out.println(measures);
 		Alarm temp = verificarTemperatura();
 		MySqlConnector.getInstance().saveMeasure(measure);
+		
 		
 		//TODO implement stuff here
 	}
@@ -56,4 +62,7 @@ public class Task implements Runnable {
 		if(result != 0) result /= -1; 
 		return result;
 	}
+	
+	
+
 }
