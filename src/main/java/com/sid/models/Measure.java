@@ -42,7 +42,7 @@ public class Measure {
 		setTemperature(measure);
 		setHumidity(measure);
 		setLuminosity(measure);
-		setTmpement(measure);
+		setMovement(measure);
 		tipoSensor = measure.getString("sens");
 		String[] splitedDat = measure.getString("dat").split("/");
 		String[] splitedTim = measure.getString("tim").split(":");
@@ -53,16 +53,13 @@ public class Measure {
 
 
 
-
-
-
-	private void setTmpement(JSONObject measure) {
+	private void setMovement(JSONObject measure) {
 		try {
-			valorTmpMedicao = measure.getDouble("Tmp");
+			valorMovMedicao = measure.getDouble("mov");
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
-			controloTmp = false;
-			extraTmp = "Could not found value Tmp";
+			controloMov = false;
+			extraMov = "Could not found value mov";
 		}
 	}
 
