@@ -90,10 +90,7 @@ public class Processor {
 		System.exit(0);
 	}
 	
-//	public Round getNextOrCurrentRound() {
-//		return nextOrCurrentRound;
-//		
-//	}
+
 	
 	public Round setNextOrCurrentRound(LocalDateTime time) {
 		
@@ -125,5 +122,9 @@ public class Processor {
 	}
 	public void setLastMovement(LocalDateTime time) {
 		lastMovement= time;
+
+	protected double getTempLimit() {
+		return mysqlSystem.getLimiteTemperatura();
+
 	}
 }

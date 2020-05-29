@@ -13,11 +13,10 @@ import lombok.Data;
 @Data
 public class Task implements Runnable {
 
-	private ArrayList<Measure> measures;
-	private Measure measure;
-	private Processor process = Processor.getInstance();
-	
-	
+
+	protected ArrayList<Measure> measures;
+	protected Measure measure;
+	protected Processor process = Processor.getInstance();
 
 	public Task(ArrayList<Measure> measuresCopy) {
 		this.measures = measuresCopy;
@@ -31,22 +30,15 @@ public class Task implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println(measures);
-		Alarm temp = verificarTemperatura();
 		MySqlConnector.getInstance().saveMeasure(measure);
 		
 		
 		//TODO implement stuff here
 	}
 	
-	private Alarm verificarTemperatura() {
-		double[] tempVals = measures.stream().mapToDouble(measure->measure.getValorTmpMedicao()).toArray();
-		double variance = varianceCheck(tempVals);
-		System.out.println(variance);
-		return null;
-	}
+	
 	//TODO implement stuff here
-	private double varianceCheck(double[] vals) {
+	protected double varianceCheck(double[] vals) {
 		double variance = getInclination(vals[0], vals[1]);
 		double average;
 		for(int i = 1; i != vals.length-1;i++) {
