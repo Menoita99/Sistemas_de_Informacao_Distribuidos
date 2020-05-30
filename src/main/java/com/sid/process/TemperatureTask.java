@@ -3,14 +3,11 @@ package com.sid.process;
 import java.util.ArrayList;
 
 
-import com.sid.database.MySqlConnector;
+
 import com.sid.models.Alarm;
 
 import com.sid.models.Measure;
 import com.sid.models.TemperatureAlarm;
-
-import lombok.Getter;
-import lombok.Setter;
 
 
 public class TemperatureTask extends Task {
@@ -22,13 +19,7 @@ public class TemperatureTask extends Task {
 	
 	@Override
 	public void run() {
-		Alarm tempAlarm = verificarTemperatura();
-		
-		if(tempAlarm != null) {
-			System.out.println(tempAlarm);
-			MySqlConnector.getInstance().insertAlarm(tempAlarm);
-		}
-
+		alarm = verificarTemperatura();
 		super.run();
 	}
 
@@ -57,38 +48,72 @@ public class TemperatureTask extends Task {
 		}
 		
 		System.out.println(process.getTempStatus()+"  :  "+variance);
-		if(process.getTempStatus() == 0) {
-			if(variance >0.2) {
-				descricao += "Temperatura a subir";
-				process.setTempStatus(1);
-				alarming = true;
-			}else if(variance < -0.2) {
-				descricao += "Temperatura a descer";
-				process.setTempStatus(-1);
-				alarming = true;
-			}
-		}else if(process.getTempStatus() == 1) {
-			if(variance >-0.2 && variance <0.2) {
-				descricao += "Temperatura estabilizou";
-				process.setTempStatus(0);
-				alarming = true;
-			}else if(variance < -0.2) {
-				descricao += "Temperatura a descer";
-				process.setTempStatus(-1);
-				alarming = true;
-			}
-		}else if(process.getTempStatus() == -1) {
-			if(variance >0.2) {
-				if(alarming) descricao += " e ";
-				descricao += "Temperatura a subir";
-				process.setTempStatus(1);
-				alarming = true;
-			}else if(variance< 0.2 && variance>-0.2) {
-				descricao += "Temperatura estabilizou";
-				process.setTempStatus(0);
-				alarming = true;
+		if(Math.abs(variance) > 5) {
+			
+		}else {
+			try {
+				switch (process.getTempStatus()) 
+				{
+					case 0: 
+					{
+						if(variance >0.2) 
+						{
+							if(alarming) descricao += " e ";
+							descricao += "Temperatura a subir";
+							process.setTempStatus(1);
+							alarming = true;
+						}
+						else if(variance < -0.2) 
+						{
+							if(alarming) descricao += " e ";
+							descricao += "Temperatura a descer";
+							process.setTempStatus(-1);
+							alarming = true;
+						}
+					}
+					case 1: 
+					{
+						if(variance >-0.2 && variance <0.2) 
+						{
+							if(alarming) descricao += " e ";
+							descricao += "Temperatura estabilizou";
+							process.setTempStatus(0);
+							alarming = true;
+						}
+						else if(variance < -0.2) 
+						{
+							if(alarming) descricao += " e ";
+							descricao += "Temperatura a descer";
+							process.setTempStatus(-1);
+							alarming = true;
+						}
+					}
+					case -1: 
+					{
+						if(variance >0.2) 
+						{
+							if(alarming) descricao += " e ";
+							descricao += "Temperatura a subir";
+							process.setTempStatus(1);
+							alarming = true;
+						}
+						else if(variance< 0.2 && variance>-0.2) 
+						{
+							if(alarming) descricao += " e ";
+							descricao += "Temperatura estabilizou";
+							process.setTempStatus(0);
+							alarming = true;
+						}
+					}
+					default:
+						throw new IllegalArgumentException("Unexpected value: " + process.getTempStatus());
+				}
+			} catch (IllegalArgumentException e) {
+				// TODO: handle exception
+				System.out.println(e);
 			}
 		}
+		
 		
 		if (alarming) {
 			return new TemperatureAlarm(measure, descricao, "", controlo);
