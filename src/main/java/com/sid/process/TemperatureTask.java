@@ -58,12 +58,14 @@ public class TemperatureTask extends Task {
 					{
 						if(variance >0.2) 
 						{
+							if(alarming) descricao += " e ";
 							descricao += "Temperatura a subir";
 							process.setTempStatus(1);
 							alarming = true;
 						}
 						else if(variance < -0.2) 
 						{
+							if(alarming) descricao += " e ";
 							descricao += "Temperatura a descer";
 							process.setTempStatus(-1);
 							alarming = true;
@@ -73,12 +75,14 @@ public class TemperatureTask extends Task {
 					{
 						if(variance >-0.2 && variance <0.2) 
 						{
+							if(alarming) descricao += " e ";
 							descricao += "Temperatura estabilizou";
 							process.setTempStatus(0);
 							alarming = true;
 						}
 						else if(variance < -0.2) 
 						{
+							if(alarming) descricao += " e ";
 							descricao += "Temperatura a descer";
 							process.setTempStatus(-1);
 							alarming = true;
@@ -95,6 +99,7 @@ public class TemperatureTask extends Task {
 						}
 						else if(variance< 0.2 && variance>-0.2) 
 						{
+							if(alarming) descricao += " e ";
 							descricao += "Temperatura estabilizou";
 							process.setTempStatus(0);
 							alarming = true;
