@@ -20,8 +20,13 @@ import lombok.Data;
 public class Processor {
 
 	private static final int NUMBER_OF_MEASURES_SAVED = 5;
-
 	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
+	private static final int NUMBER_WRONG__TO_EMAIL = 20;
+	private static final int NUMBER_RIGHT__TO_RESET = 5;
+	private static final int NUMBER_RESET_COOLDOWN = 21600;
+	
+	
+	
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
@@ -29,6 +34,30 @@ public class Processor {
 	private ObservableList<Measure> humMeasures = FXCollections.observableArrayList();
 	private ObservableList<Measure> movMeasures = FXCollections.observableArrayList();
 	private ObservableList<Measure> lumMeasures = FXCollections.observableArrayList();
+	
+	//sendEmail
+	private int wrongMeasuresTemp =0;
+	private int wrongMeasuresHum =0;
+	private int wrongMeasuresMov =0;
+	private int wrongMeasuresLum =0;
+	
+	private int rightMeasuresTemp =0;
+	private int rightMeasuresHum =0;
+	private int rightMeasuresMov =0;
+	private int rightMeasuresLum =0;
+	
+	
+	private boolean temp_sent_email ;
+	private boolean hum_sent_email ;
+	private boolean mov_sent_email ;
+	private boolean lum_sent_email ;
+	
+	private int temp_send_email_cooldown;
+	private int hum_send_email_cooldown;
+	private int mov_send_email_cooldown;
+	private int lum_send_email_cooldown;
+	
+
 
 	//connectors
 	private MySqlConnector mysqlConnector;
@@ -41,8 +70,8 @@ public class Processor {
 	private ThreadPool movWorkers;
 	private ThreadPool lumWorkers;
 	
+	
 	//variables to help check movement
-
 	private Round nextOrCurrentRound;
 	private LocalDateTime lastTimeChecked;
 	private LocalDateTime lastMovement;
@@ -67,7 +96,6 @@ public class Processor {
 		mysqlSystem = MysqlSystem.getInstance();
 
 		time_to_worry = MovementTask.getTimeToWorryMov();
-		time_to_worry = MovementTask.getTimeToSendEmail();
 
 		tempWorkers = new ThreadPool(1);
 		humWorkers = new ThreadPool(1);
@@ -79,6 +107,12 @@ public class Processor {
 		HumCooldown = 0;
 		TempStatus = 0;
 		HumStatus = 0;
+		
+		temp_sent_email = false;
+		hum_sent_email = false;
+		mov_sent_email = false;
+		lum_sent_email = false;
+		
 	}
 
 
@@ -93,7 +127,10 @@ public class Processor {
 			JSONObject jobj = mongoConnector.read();
 			//System.out.println("Read-> "+jobj);
 			try {
-				addAndTreatMeasure(new Measure(jobj));
+				Measure measure = new Measure(jobj);
+				addAndTreatMeasure(measure);
+				MySqlConnector.getInstance().saveMeasure(measure);
+
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -120,35 +157,186 @@ public class Processor {
 		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
 			measures.remove(0);
 		}
+		addTempMeasure(newMeasure);
+		addHumMeasure(newMeasure);
+		addMovMeasure(newMeasure);
+		addLumMeasure(newMeasure);
+		
+		
+		
+		
+	}
+	
+	private void addTempMeasure(Measure newMeasure) {
+		
+		
+		if(temp_sent_email) {
+			temp_send_email_cooldown--;
+			if(temp_send_email_cooldown<=0)
+				temp_sent_email=false;
+				
+		}
+		
+		
 		if(newMeasure.isControloTmp()) {
 			tempMeasures.add(newMeasure);
 			if (tempMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				tempMeasures.remove(0);
 			}
 			tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(tempMeasures)));
+			rightMeasuresTemp++;
+			
+			if(rightMeasuresTemp >= NUMBER_RIGHT__TO_RESET) {
+				wrongMeasuresTemp = 0;
+				rightMeasuresTemp = 0;
+				
+				
+			}
+				
+
+			}else{
+				wrongMeasuresTemp++;
+				rightMeasuresTemp = 0;
+				if (wrongMeasuresTemp >= NUMBER_WRONG__TO_EMAIL && !temp_sent_email ) {
+					//TODO sendemail
+					wrongMeasuresTemp = 0;
+					temp_sent_email=true;
+					temp_send_email_cooldown = NUMBER_RESET_COOLDOWN;
+					
+				}
+					
+			
+			
 		}
+		
+	}
+	private void addHumMeasure(Measure newMeasure) {
+		
+		if(hum_sent_email) {
+			hum_send_email_cooldown--;
+			if(hum_send_email_cooldown<=0)
+				hum_sent_email=false;
+				
+		}
+		
+		
 		if(newMeasure.isControloHum()) {
 			humMeasures.add(newMeasure);
 			if (humMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				humMeasures.remove(0);
 			}
 			//humWorkers.submit(new HumidityTask(new ArrayList<Measure>(humMeasures)));
+			
+			rightMeasuresHum++;
+			
+			if(rightMeasuresHum >= NUMBER_RIGHT__TO_RESET) {
+				wrongMeasuresHum = 0;
+				rightMeasuresHum = 0;
+				
+				
+			}
+				
+	
+			}else{
+				wrongMeasuresHum++;
+				rightMeasuresHum = 0;
+				if (wrongMeasuresHum >= NUMBER_WRONG__TO_EMAIL && !hum_sent_email ) {
+					//TODO sendemail
+					wrongMeasuresHum = 0;
+					hum_sent_email=true;
+					hum_send_email_cooldown = NUMBER_RESET_COOLDOWN;
+				
+			}
+				
+			
+			
 		}
+		
+	}
+	private void addMovMeasure(Measure newMeasure) {
+		
+		if(mov_sent_email) {
+			mov_send_email_cooldown--;
+			if(mov_send_email_cooldown<=0)
+				mov_sent_email=false;
+				
+		}
+		
+		
 		if(newMeasure.isControloMov()) {
 			movMeasures.add(newMeasure);
 			if (movMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				movMeasures.remove(0);
 			}
 			movWorkers.submit(new MovementTask(new ArrayList<Measure>(movMeasures)));
+			rightMeasuresMov++;
+			
+			if(rightMeasuresMov >= NUMBER_RIGHT__TO_RESET) {
+				wrongMeasuresMov = 0;
+				rightMeasuresMov = 0;
+				
+				
+			}
 		}
+		else {
+			wrongMeasuresMov++;
+			rightMeasuresMov = 0;
+			if (wrongMeasuresMov >= NUMBER_WRONG__TO_EMAIL && !mov_sent_email ) {
+				//TODO sendemail
+				wrongMeasuresMov = 0;
+				mov_sent_email=true;
+				mov_send_email_cooldown = NUMBER_RESET_COOLDOWN;
+				
+			}
+				
+			
+		}
+		
+	}
+	private void addLumMeasure(Measure newMeasure) {
+		
+		if(lum_sent_email) {
+			lum_send_email_cooldown--;
+			if(lum_send_email_cooldown<=0)
+				lum_sent_email=false;
+				
+		}
+		
 		if(newMeasure.isControloLum()) {
 			lumMeasures.add(newMeasure);
 			if (lumMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				lumMeasures.remove(0);
 			}
 			//lumWorkers.submit(new LumTask(new ArrayList<Measure>(lumMeasures)));
+			rightMeasuresLum++;
+
+	
+			if(rightMeasuresLum >= NUMBER_RIGHT__TO_RESET) {
+				wrongMeasuresLum = 0;
+				rightMeasuresLum = 0;
+				
+			}
+			
 		}
+			else {
+				wrongMeasuresLum++;
+				rightMeasuresLum = 0;
+				if (wrongMeasuresLum >= NUMBER_WRONG__TO_EMAIL && !lum_sent_email ) {
+					//TODO sendemail
+					wrongMeasuresLum = 0;
+					lum_sent_email=true;
+					lum_send_email_cooldown = NUMBER_RESET_COOLDOWN;
+					
+				}
+					
+				
+			}
+		
 	}
+	
+	
+	
+	
 
 	public void close() {
 		System.exit(0);
