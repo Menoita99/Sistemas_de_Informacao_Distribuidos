@@ -40,12 +40,12 @@ public class Measure {
 		setTemperature(measure);
 		setHumidity(measure);
 		setLuminosity(measure);
+		setMovement(measure);
 		tipoSensor = measure.getString("sens");
 		String[] splitedDat = measure.getString("dat").split("/");
 		String[] splitedTim = measure.getString("tim").split(":");
 		dataHoraMedicao = LocalDateTime.of(Integer.parseInt(splitedDat[2]), Integer.parseInt(splitedDat[1]), Integer.parseInt(splitedDat[0]), 
 											Integer.parseInt(splitedTim[0]), Integer.parseInt(splitedTim[1]), Integer.parseInt(splitedTim[2]));
-		valid = validate();
 	}
 
 
@@ -59,6 +59,12 @@ public class Measure {
 			extraMov = "Could not find value mov";
 		}
 	}
+	
+	
+	
+	
+	
+	
 
 	private void setLuminosity(JSONObject measure) {
 		try {
