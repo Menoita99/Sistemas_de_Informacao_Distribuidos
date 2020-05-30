@@ -56,7 +56,9 @@ public class Measure {
 	private void setMovement(JSONObject measure) {
 		try {
 			valorMovMedicao = measure.getDouble("mov");
-			//TODO VERIFICATIONS
+			if( valorMovMedicao != 0.0 && valorMovMedicao != 1.0 )
+				controloMov = false;
+				
 		} catch (Exception e) {
 			controloMov = false;
 			extraMov = "Could not found value mov";
