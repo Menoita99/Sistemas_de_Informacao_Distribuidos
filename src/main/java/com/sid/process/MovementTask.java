@@ -31,7 +31,7 @@ public class MovementTask extends Task {
 	public void run() {
 		//super.run();
 		System.out.println("Movement " + measures);
-		if(measures.get(0).isControloMov()==true) {
+		if(measures.get(0).isControloMov()) {
 			verifyMomentValues();
 			process.setBadMovement(null);
 			process.setTime_to_send_email(TIME_TO_SEND_EMAIL);
