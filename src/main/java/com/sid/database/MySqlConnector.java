@@ -126,7 +126,7 @@ public class MySqlConnector {
 			stm = connection.createStatement();
 			String query = "INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra)  VALUES ";
 			boolean modified = false;
-			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao();//.plusHours(1);
 
 			if (!duplicatesCheck[0]) {// HUMIDITY
 				query += (modified ? "," : "") + "(" + m.getValorHumMedicao() + ", 'HUM' , '" + dataHoraMedicao + "', "
@@ -189,7 +189,7 @@ public class MySqlConnector {
 		Statement stm = null;
 		try {
 			stm = connection.createStatement();
-			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao();//.plusHours(1);
 			ResultSet hum = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
 							+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
