@@ -43,9 +43,14 @@ public class MySqlConnector {
 			connection = DriverManager.getConnection(dbUrl, user, password);
 
 			new Thread(() -> {
-				//TODO Process this measures if not processed (Maybe add a field processed in mongoDB collection document)
+				// TODO Process this measures if not processed (Maybe add a field processed in
+				// mongoDB collection document)
 				checkForUnsavedMeasures();
-				try { Thread.sleep(30000); } catch (InterruptedException e) { e.printStackTrace(); }
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}).start();
 
 		} catch (IOException | ClassNotFoundException | SQLException e) {
@@ -53,12 +58,6 @@ public class MySqlConnector {
 			e.printStackTrace();
 		}
 	}
-
-
-
-
-
-
 
 	/**
 	 * Executes schema.sql present in resources folder
@@ -72,21 +71,11 @@ public class MySqlConnector {
 		}
 	}
 
-
-
-
-
-
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
 		return INSTANCE;
 	}
-
-
-
-
-
 
 	public List<Object> getSystemValues() {
 		List<Object> output = new ArrayList<>();
@@ -113,11 +102,6 @@ public class MySqlConnector {
 		}
 		return output;
 	}
-
-
-
-
-
 
 	public boolean saveMeasure(Measure m) {
 		Statement stm = null;
@@ -153,7 +137,7 @@ public class MySqlConnector {
 				stm.executeUpdate(query);
 
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
-			System.out.println("Saved -> " + m);
+			//System.out.println("Saved -> " + m);
 		} catch (SQLException e) {
 			System.out.println(
 					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
@@ -168,23 +152,11 @@ public class MySqlConnector {
 		return false;
 	}
 
-
-
-
-
-
 	private void checkForUnsavedMeasures() {
 		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
 		for (Measure measure : unsavedMeasures)
 			saveMeasure(measure);
 	}
-
-
-
-
-
-
-
 
 	public boolean[] checkForDuplicates(Measure m) {
 		boolean[] duplicates = new boolean[4];
@@ -194,22 +166,22 @@ public class MySqlConnector {
 			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
 			ResultSet hum = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
-					+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+							+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[0] = hum.next();
 
 			ResultSet temp = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
-					+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+							+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[1] = temp.next();
 
 			ResultSet mov = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
-					+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
+							+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[2] = mov.next();
 
 			ResultSet lum = stm
 					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
-					+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
+							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -249,9 +221,6 @@ public class MySqlConnector {
 		return round_list.get(0);
 	}
 
-	
-
-
 	private void reading_rounds_table(ResultSet rp) throws SQLException {
 		// read line at a time
 		while (rp.next()) {
@@ -264,22 +233,12 @@ public class MySqlConnector {
 		}
 	}
 
-
-
-
-
-
 	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
-		round_list.add( new Round(user_mail,ronda_inicio,ronda_fim));
+		round_list.add(new Round(user_mail, ronda_inicio, ronda_fim));
 
 	}
 
-
-
-
-
-
-	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date){
+	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
 
@@ -308,7 +267,7 @@ public class MySqlConnector {
 		return round_list;
 	}
 
-	public Alarm findLastSevereAlarm(){
+	public Alarm findLastSevereAlarm() {
 		Statement stm = null;
 		Alarm a = null;
 		try {
@@ -332,21 +291,13 @@ public class MySqlConnector {
 
 	}
 
-
-
-
-
-
-
-
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
 		Alarm a = null;
 		while (tp.next()) {
 			String date_string = tp.getString("DataHoraMedicao");
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-			LocalDateTime date = LocalDateTime.parse(date_string,formatter);
-
+			LocalDateTime date = LocalDateTime.parse(date_string, formatter);
 
 			String tipo = tp.getString("TipoSensor");
 			Double value_med = tp.getDouble("ValorMedicao");
@@ -359,17 +310,12 @@ public class MySqlConnector {
 		return a;
 	}
 
-
-
-
-
-
-
-	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description, boolean control, String extra) {
-		return new Alarm(value_med,limit,tipo,extra,description,data,control);
+	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description,
+			boolean control, String extra) {
+		return new Alarm(value_med, limit, tipo, extra, description, data, control);
 	}
 
-	public Alarm findLastDangerAlarm(){
+	public Alarm findLastDangerAlarm() {
 		Statement stm = null;
 		Alarm a = null;
 		try {
@@ -394,94 +340,44 @@ public class MySqlConnector {
 
 	public void insertAlarm(Alarm a) {
 		Statement stm = null;
-		try {
-			stm = connection.createStatement();
-			String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
-					+ "VALUES ( '"+a.getDataHoraMedicao()+"', '"+a.getTipoSensor()+"', '"+a.getValorMedicao()+"', '"+a.getLimite()+"', '"+a.getDescricao()+"','"+a.getControlo()+"' , '"+a.getExtra()+"');";
-			int tp = stm.executeUpdate(command);
-			System.out.println(tp);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
+		if (a != null) {
 			try {
-				stm.close();
+				stm = connection.createStatement();
+				String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
+						+ "VALUES ( '" + a.getDataHoraMedicao() + "', '" + a.getTipoSensor() + "', '"
+						+ a.getValorMedicao() + "', '" + a.getLimite() + "', '" + a.getDescricao() + "','"
+						+ a.getControlo() + "' , '" + a.getExtra() + "');";
+				int tp = stm.executeUpdate(command);
+				System.out.println(tp);
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					stm.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
 	}
-	public Round findNextOrCurrentRound(LocalDateTime date) {
-		round_list.clear();
-		Statement stm = null;
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		String data = date.format(formatter);
-		try {
-			// vai buscar a tabela da ronda planeada e extra
-			stm = connection.createStatement();
-			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_inicio=\"" + data + "\" || "
-					+ "ronda_inicio >\"" + data + "\" || "
-					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio <\"" + data + "\") "
-							+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) "
-				             + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\" || "
-				             + "ronda_inicio >\"" + data + "\" || "
-				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio <\"" + data + "\") "
-									+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) )"
-									+ ")" ;
-
-			ResultSet ronda_planeada_extra = stm.executeQuery(command);
-			read_round(ronda_planeada_extra);
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				stm.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-			if(!round_list.isEmpty())
-				return round_list.get(0);
-			else
-				return null;
-	}
-
-
-
-
-	private void read_round(ResultSet rp) throws SQLException {
-		// read line at a time
-		if (rp.next()) {
-			String user_mail = rp.getString("email");
-			String ronda_inicio = rp.getString("ronda_inicio");
-			String ronda_fim = rp.getString("ronda_fim");
-			add_round(user_mail, ronda_inicio, ronda_fim);
-
-		}
-	}
-
 
 	public static void main(String[] args) {
-//		int year=2019;
-//		int month=12;
-//		int dayOfMonth=31;
-//		int hour=02;
-//
-//		int minute=00;
-//		LocalDateTime date = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
-//		Alarm aa = new Alarm(40.2,"hum",LocalDateTime.now(), 40.2, "2", "1", true);
-//		getInstance().insertAlarm(aa);
-//		System.out.println("s");
-		//		System.out.println(getInstance().findRondaByDate(date));
-		//		System.out.println(getInstance().findAllRondasBiggerThen(date));
+		int year = 2019;
+		int month = 12;
+		int dayOfMonth = 31;
+		int hour = 02;
+
+		int minute = 00;
+		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
+		Alarm aa = new Alarm(40.2, "hum", LocalDateTime.now(), 40.2, "2", "1", true);
+		getInstance().insertAlarm(aa);
+		System.out.println("s");
+		// System.out.println(getInstance().findRondaByDate(date));
+		// System.out.println(getInstance().findAllRondasBiggerThen(date));
 		//
-		//		System.out.println(getInstance().findLastDangerAlarm());
-		//		System.out.println(getInstance().findLastSevereAlarm());
-		System.out.println(getInstance().findNextOrCurrentRound( LocalDateTime.parse( "2020-05-29 21:37:00",DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") ) ));
-
-
-
+		// System.out.println(getInstance().findLastDangerAlarm());
+		// System.out.println(getInstance().findLastSevereAlarm());
 
 	}
 }

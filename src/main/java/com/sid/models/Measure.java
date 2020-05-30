@@ -18,19 +18,17 @@ public class Measure {
 	private String tipoSensor;
 	private LocalDateTime dataHoraMedicao;
 
-	private boolean controloTmp = false;
+	private boolean controloTmp = true;
 	private String extraTmp = " ";
 	
-	private boolean controloHum = false;
+	private boolean controloHum = true;
 	private String extraHum = " ";
 	
-	private boolean controloLum = false;
+	private boolean controloLum = true;
 	private String extraLum = " ";
 	
-	private boolean controloMov = false;
+	private boolean controloMov = true;
 	private String extraMov = " ";
-
-	private boolean valid;
 
 	
 	
@@ -48,7 +46,6 @@ public class Measure {
 		String[] splitedTim = measure.getString("tim").split(":");
 		dataHoraMedicao = LocalDateTime.of(Integer.parseInt(splitedDat[2]), Integer.parseInt(splitedDat[1]), Integer.parseInt(splitedDat[0]), 
 											Integer.parseInt(splitedTim[0]), Integer.parseInt(splitedTim[1]), Integer.parseInt(splitedTim[2]));
-		valid = validate();
 	}
 
 
@@ -61,13 +58,15 @@ public class Measure {
 				
 		} catch (Exception e) {
 			controloMov = false;
-			extraMov = "Could not found value mov";
+			extraMov = "Could not find value mov";
 		}
 	}
 	
-
-
-
+	
+	
+	
+	
+	
 
 	private void setLuminosity(JSONObject measure) {
 		try {
@@ -75,7 +74,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloLum = false;
-			extraLum = "Could not found value cell";
+			extraLum = "Could not find value cell";
 		}
 	}
 
@@ -90,7 +89,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloHum = false;
-			extraHum = "Could not found value hum";
+			extraHum = "Could not find value hum";
 		}
 	}
 
@@ -105,17 +104,8 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloTmp = false;
-			extraTmp = "Could not found value tmp";
+			extraTmp = "Could not find value tmp";
 		}
-	}
-
-	
-	
-	
-	
-	
-	public boolean validate() {
-		return tipoSensor.matches("[a-zA-Z]{4}") && valorLumMedicao>=0 && valorHumMedicao >=0;
 	}
 
 }
