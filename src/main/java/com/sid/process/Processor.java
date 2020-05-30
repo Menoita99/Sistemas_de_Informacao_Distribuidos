@@ -15,6 +15,7 @@ import com.sid.util.ThreadPool;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
+import lombok.Getter;
 
 @Data
 public class Processor {
@@ -29,13 +30,24 @@ public class Processor {
 	
 	private MysqlSystem mysqlSystem;
 	
-	private ThreadPool workers;
+	private ThreadPool tempWorkers;
+	private ThreadPool humWorkers;
+	private ThreadPool movWorkers;
+	private ThreadPool lumWorkers;
 	
 	//variables to help check movement
 	private Round nextRound;
 	private LocalDateTime lastTimeChecked;
 	private LocalDateTime lastMovement;
-
+	private static final int NUMBER_OF_MEASURES_SAVED = 5;
+	
+	private boolean TempOverLim;
+	private boolean HumOverLim;
+	private int TempCooldown;
+	private int HumCooldown;
+	private int TempStatus;
+	private int HumStatus;
+	
 	
 	
 	
@@ -43,7 +55,16 @@ public class Processor {
 		mysqlConnector = MySqlConnector.getInstance();
 		mongoConnector = MongoConnector.getInstance();
 		mysqlSystem = MysqlSystem.getInstance();
-		workers = new ThreadPool(10);
+		tempWorkers = new ThreadPool(1);
+		humWorkers = new ThreadPool(1);
+		movWorkers = new ThreadPool(1);
+		lumWorkers = new ThreadPool(1);
+		HumOverLim = false;
+		TempOverLim = false;
+		TempCooldown = 0;
+		HumCooldown = 0;
+		TempStatus = 0;
+		HumStatus = 0;
 	}
 
 
@@ -56,10 +77,10 @@ public class Processor {
 	public void Process() {
 		while(true) {
 			JSONObject jobj = mongoConnector.read();
-			System.out.println("Read-> "+jobj);
+			//System.out.println("Read-> "+jobj);
 			try {
 				addMeasure(new Measure(jobj));
-				workers.submit(new Task(new ArrayList<Measure>(measures)));
+				tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(measures)));
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -83,7 +104,7 @@ public class Processor {
 
 	private void addMeasure(Measure newMeasure) {
 		measures.add(newMeasure);
-		if (measures.size() >= 3) {
+		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
 			measures.remove(0);
 		}
 	}
