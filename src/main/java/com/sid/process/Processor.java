@@ -22,7 +22,10 @@ public class Processor {
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	
-	private ObservableList<Measure> measures = FXCollections.observableArrayList();
+	private ObservableList<Measure> tempMeasures = FXCollections.observableArrayList();
+	private ObservableList<Measure> humMeasures = FXCollections.observableArrayList();
+	private ObservableList<Measure> movMeasures = FXCollections.observableArrayList();
+	private ObservableList<Measure> lumMeasures = FXCollections.observableArrayList();
 
 	//connectors
 	private MySqlConnector mysqlConnector;
@@ -75,13 +78,7 @@ public class Processor {
 			JSONObject jobj = mongoConnector.read();
 			//System.out.println("Read-> "+jobj);
 			try {
-				addMeasure(new Measure(jobj));
-				tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(measures)));
-				//usar os workers para tasks do seu tipo
-				//humWorkers.submit(new HumidityTask(new ArrayList<Measure>(measures)));
-				//movWorkers.submit(new MovTask(new ArrayList<Measure>(measures)));
-				//lumWorkers.submit(new LumTask(new ArrayList<Measure>(measures)));
-				
+				addAndTreatMeasure(new Measure(jobj));
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -103,10 +100,34 @@ public class Processor {
 	
 	
 
-	private void addMeasure(Measure newMeasure) {
-		measures.add(newMeasure);
-		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
-			measures.remove(0);
+	private void addAndTreatMeasure(Measure newMeasure) {
+		if(!newMeasure.isControloTmp()) {
+			tempMeasures.add(newMeasure);
+			if (tempMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
+				tempMeasures.remove(0);
+			}
+			tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(tempMeasures)));
+		}
+		if(!newMeasure.isControloHum()) {
+			humMeasures.add(newMeasure);
+			if (humMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
+				humMeasures.remove(0);
+			}
+			//humWorkers.submit(new HumidityTask(new ArrayList<Measure>(humMeasures)));
+		}
+		if(!newMeasure.isControloMov()) {
+			movMeasures.add(newMeasure);
+			if (movMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
+				movMeasures.remove(0);
+			}
+			//movWorkers.submit(new MovTask(new ArrayList<Measure>(movMeasures)));
+		}
+		if(!newMeasure.isControloLum()) {
+			lumMeasures.add(newMeasure);
+			if (lumMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
+				lumMeasures.remove(0);
+			}
+			//lumWorkers.submit(new LumTask(new ArrayList<Measure>(lumMeasures)));
 		}
 	}
 

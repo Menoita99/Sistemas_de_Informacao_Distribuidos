@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 public class Task implements Runnable {
-
+	protected Alarm alarm;
 	protected ArrayList<Measure> measures;
 	protected Measure measure;
 	protected Processor process = Processor.getInstance();
@@ -26,19 +26,16 @@ public class Task implements Runnable {
 
 	@Override
 	public void run() {
+		if(alarm != null) {
+			System.out.println(alarm);
+			MySqlConnector.getInstance().insertAlarm(alarm);
+		}
 		System.out.println(measures);
-		Alarm temp = verificarTemperatura();
 		MySqlConnector.getInstance().saveMeasure(measure);
 		
 		//TODO implement stuff here
 	}
-	
-	private Alarm verificarTemperatura() {
-		double[] tempVals = measures.stream().mapToDouble(measure->measure.getValorTmpMedicao()).toArray();
-		double variance = varianceCheck(tempVals);
-		System.out.println(variance);
-		return null;
-	}
+
 	//TODO implement stuff here
 
 	protected double varianceCheck(double[] vals) {
