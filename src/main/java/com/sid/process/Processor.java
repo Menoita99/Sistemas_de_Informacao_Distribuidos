@@ -1,7 +1,5 @@
 package com.sid.process;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.json.JSONObject;
@@ -20,8 +18,9 @@ import lombok.Data;
 @Data
 public class Processor {
 
+	private static final int NUMBER_OF_MEASURES_SAVED = 5;
+
 	private static Processor INSTANCE; //this is used by performance monitor
-	private final static int MINUTES_TO_RECHECK_ROUNDS = 10;
 	
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
 
@@ -31,13 +30,20 @@ public class Processor {
 	
 	private MysqlSystem mysqlSystem;
 	
-	private ThreadPool workers;
+	private ThreadPool tempWorkers;
+	private ThreadPool humWorkers;
+	private ThreadPool movWorkers;
+	private ThreadPool lumWorkers;
 	
 	//variables to help check movement
-	private Round nextOrCurrentRound;
-	private LocalDateTime lastTimeChecked;
-	private LocalDateTime lastMovement;
-
+	private Round nextRounivate;
+	boolean TempOverLim;
+	private boolean HumOverLim;
+	private int TempCooldown;
+	private int HumCooldown;
+	private int TempStatus;
+	private int HumStatus;
+	
 	
 	
 	
@@ -45,19 +51,37 @@ public class Processor {
 		mysqlConnector = MySqlConnector.getInstance();
 		mongoConnector = MongoConnector.getInstance();
 		mysqlSystem = MysqlSystem.getInstance();
-		workers = new ThreadPool(10);
+		tempWorkers = new ThreadPool(1);
+		humWorkers = new ThreadPool(1);
+		movWorkers = new ThreadPool(1);
+		lumWorkers = new ThreadPool(1);
+		HumOverLim = false;
+		TempOverLim = false;
+		TempCooldown = 0;
+		HumCooldown = 0;
+		TempStatus = 0;
+		HumStatus = 0;
 	}
-		
+
+
+	
+	
+	
 	/**
 	 * Main loop
 	 */
 	public void Process() {
 		while(true) {
 			JSONObject jobj = mongoConnector.read();
-			System.out.println("Read-> "+jobj);
+			//System.out.println("Read-> "+jobj);
 			try {
 				addMeasure(new Measure(jobj));
-				workers.submit(new MovementTask(new ArrayList<Measure>(measures)));
+				tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(measures)));
+				//usar os workers para tasks do seu tipo
+				//humWorkers.submit(new HumidityTask(new ArrayList<Measure>(measures)));
+				//movWorkers.submit(new MovTask(new ArrayList<Measure>(measures)));
+				//lumWorkers.submit(new LumTask(new ArrayList<Measure>(measures)));
+				
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
@@ -81,7 +105,7 @@ public class Processor {
 
 	private void addMeasure(Measure newMeasure) {
 		measures.add(newMeasure);
-		if (measures.size() >= 3) {
+		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
 			measures.remove(0);
 		}
 	}
@@ -90,49 +114,4 @@ public class Processor {
 		System.exit(0);
 	}
 	
-
-	
-	public Round setNextOrCurrentRound(LocalDateTime time) {
-		
-		
-		if(nextOrCurrentRound== null || (isTimeTocheckRounds() && !nextOrCurrentRound.getRound_begin().isAfter(time) )) {
-			
-			System.out.println("getting next round");
-			 nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
-			 lastTimeChecked = LocalDateTime.now();
-			 lastMovement= time;
-			 System.out.println("next round: " + nextOrCurrentRound);
-			 return nextOrCurrentRound;
-			 
-		}else if(nextOrCurrentRound.getRound_begin().isAfter(time) ) //in case an older message pops up is it worth it?
-			return  mysqlConnector.findNextOrCurrentRound(time);
-		
-		return nextOrCurrentRound;
-			
-		
-	}
-	public boolean isTimeTocheckRounds() {
-		
-			LocalDateTime limit= lastTimeChecked.plusMinutes(MINUTES_TO_RECHECK_ROUNDS);
-			LocalDateTime now = LocalDateTime.now();
-			return now.isAfter( limit ) || now.isEqual(limit) ;
-	
-	}
-	
-	public void setLastTimeChecked() {
-		lastTimeChecked = LocalDateTime.now();
-	}
-	public LocalDateTime getLastMovement() {
-		return lastMovement;
-	}
-	public void setLastMovement(LocalDateTime time) {
-		lastMovement= time;
-		
-	}
-	
-
-	protected double getTempLimit() {
-		return mysqlSystem.getLimiteTemperatura();
-
-	}
 }

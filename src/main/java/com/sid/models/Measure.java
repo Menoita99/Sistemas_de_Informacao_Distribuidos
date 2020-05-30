@@ -18,19 +18,17 @@ public class Measure {
 	private String tipoSensor;
 	private LocalDateTime dataHoraMedicao;
 
-	private boolean controloTmp = false;
+	private boolean controloTmp = true;
 	private String extraTmp = " ";
 	
-	private boolean controloHum = false;
+	private boolean controloHum = true;
 	private String extraHum = " ";
 	
-	private boolean controloLum = false;
+	private boolean controloLum = true;
 	private String extraLum = " ";
 	
-	private boolean controloMov = false;
+	private boolean controloMov = true;
 	private String extraMov = " ";
-
-	private boolean valid;
 
 	
 	
@@ -42,7 +40,6 @@ public class Measure {
 		setTemperature(measure);
 		setHumidity(measure);
 		setLuminosity(measure);
-		setMovement(measure);
 		tipoSensor = measure.getString("sens");
 		String[] splitedDat = measure.getString("dat").split("/");
 		String[] splitedTim = measure.getString("tim").split(":");
@@ -62,10 +59,6 @@ public class Measure {
 			extraMov = "Could not find value mov";
 		}
 	}
-	
-
-
-
 
 	private void setLuminosity(JSONObject measure) {
 		try {
@@ -105,15 +98,6 @@ public class Measure {
 			controloTmp = false;
 			extraTmp = "Could not find value tmp";
 		}
-	}
-
-	
-	
-	
-	
-	
-	public boolean validate() {
-		return tipoSensor.matches("[a-zA-Z]{4}") && valorLumMedicao>=0 && valorHumMedicao >=0;
 	}
 
 }
