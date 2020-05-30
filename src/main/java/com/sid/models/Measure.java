@@ -40,6 +40,7 @@ public class Measure {
 		setTemperature(measure);
 		setHumidity(measure);
 		setLuminosity(measure);
+		setMovement(measure);
 		tipoSensor = measure.getString("sens");
 		String[] splitedDat = measure.getString("dat").split("/");
 		String[] splitedTim = measure.getString("tim").split(":");
@@ -47,14 +48,31 @@ public class Measure {
 											Integer.parseInt(splitedTim[0]), Integer.parseInt(splitedTim[1]), Integer.parseInt(splitedTim[2]));
 	}
 
+
+
+	private void setMovement(JSONObject measure) {
+		try {
+			valorMovMedicao = measure.getDouble("mov");
+			//TODO VERIFICATIONS
+		} catch (Exception e) {
+			controloMov = false;
+			extraMov = "Could not find value mov";
+		}
+	}
+	
+	
+	
+	
+	
+	
+
 	private void setLuminosity(JSONObject measure) {
 		try {
 			valorLumMedicao = measure.getDouble("cell");
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloLum = false;
-			extraLum = "Could not found value cell";
-			
+			extraLum = "Could not find value cell";
 		}
 	}
 
@@ -69,8 +87,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloHum = false;
-			extraHum = "Could not found value hum";
-			
+			extraHum = "Could not find value hum";
 		}
 	}
 
@@ -85,8 +102,7 @@ public class Measure {
 			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloTmp = false;
-			extraTmp = "Could not found value tmp";
-			
+			extraTmp = "Could not find value tmp";
 		}
 	}
 
