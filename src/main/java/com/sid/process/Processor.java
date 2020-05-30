@@ -21,7 +21,7 @@ public class Processor {
 	private static final int NUMBER_OF_MEASURES_SAVED = 5;
 
 	private static Processor INSTANCE; //this is used by performance monitor
-	
+	private ObservableList<Measure> measures = FXCollections.observableArrayList();
 	private ObservableList<Measure> tempMeasures = FXCollections.observableArrayList();
 	private ObservableList<Measure> humMeasures = FXCollections.observableArrayList();
 	private ObservableList<Measure> movMeasures = FXCollections.observableArrayList();
@@ -101,6 +101,10 @@ public class Processor {
 	
 
 	private void addAndTreatMeasure(Measure newMeasure) {
+		measures.add(newMeasure);
+		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
+			measures.remove(0);
+		}
 		if(!newMeasure.isControloTmp()) {
 			tempMeasures.add(newMeasure);
 			if (tempMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
