@@ -1,5 +1,6 @@
 package com.sid.process;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.json.JSONObject;
@@ -19,6 +20,8 @@ import lombok.Data;
 public class Processor {
 
 	private static final int NUMBER_OF_MEASURES_SAVED = 5;
+
+	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
@@ -65,7 +68,6 @@ public class Processor {
 
 		time_to_worry = MovementTask.getTimeToWorryMov();
 		time_to_worry = MovementTask.getTimeToSendEmail();
-		workers = new ThreadPool(10);
 
 		tempWorkers = new ThreadPool(1);
 		humWorkers = new ThreadPool(1);
@@ -118,28 +120,28 @@ public class Processor {
 		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
 			measures.remove(0);
 		}
-		if(!newMeasure.isControloTmp()) {
+		if(newMeasure.isControloTmp()) {
 			tempMeasures.add(newMeasure);
 			if (tempMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				tempMeasures.remove(0);
 			}
 			tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(tempMeasures)));
 		}
-		if(!newMeasure.isControloHum()) {
+		if(newMeasure.isControloHum()) {
 			humMeasures.add(newMeasure);
 			if (humMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				humMeasures.remove(0);
 			}
 			//humWorkers.submit(new HumidityTask(new ArrayList<Measure>(humMeasures)));
 		}
-		if(!newMeasure.isControloMov()) {
+		if(newMeasure.isControloMov()) {
 			movMeasures.add(newMeasure);
 			if (movMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				movMeasures.remove(0);
 			}
-			//movWorkers.submit(new MovTask(new ArrayList<Measure>(movMeasures)));
+			movWorkers.submit(new MovementTask(new ArrayList<Measure>(movMeasures)));
 		}
-		if(!newMeasure.isControloLum()) {
+		if(newMeasure.isControloLum()) {
 			lumMeasures.add(newMeasure);
 			if (lumMeasures.size() >= NUMBER_OF_MEASURES_SAVED) {
 				lumMeasures.remove(0);
