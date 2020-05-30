@@ -77,6 +77,11 @@ public class Processor {
 			try {
 				addMeasure(new Measure(jobj));
 				tempWorkers.submit(new TemperatureTask(new ArrayList<Measure>(measures)));
+				//usar os workers para tasks do seu tipo
+				//humWorkers.submit(new HumidityTask(new ArrayList<Measure>(measures)));
+				//movWorkers.submit(new MovTask(new ArrayList<Measure>(measures)));
+				//lumWorkers.submit(new LumTask(new ArrayList<Measure>(measures)));
+				
 			} catch (Exception e) {
 				System.err.println("Could not read -> "+jobj);
 				e.printStackTrace();
