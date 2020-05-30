@@ -8,7 +8,6 @@ import com.sid.models.Round;
 
 public class MovementTask extends Task {
 		private static final int TIME_TO_WORRY_MOV = 10;
-		private static final int TIME_TO_SEND_EMAIL = 5;
 		
 
 		private ArrayList<Measure> measures;
@@ -31,25 +30,7 @@ public class MovementTask extends Task {
 	public void run() {
 		//super.run();
 		System.out.println("Movement " + measures);
-		if(measures.get(0).isControloMov()) {
 			verifyMomentValues();
-			process.setBadMovement(null);
-			process.setTime_to_send_email(TIME_TO_SEND_EMAIL);
-		}
-		else if(process.getBadMovement()== null)
-					process.setBadMovement(measures.get(0).getDataHoraMedicao());
-		else if(  measures.get(0).getDataHoraMedicao().isEqual(process.getBadMovement().plusMinutes(TIME_TO_SEND_EMAIL) ) ||
-					measures.get(0).getDataHoraMedicao().isAfter(process.getBadMovement().plusMinutes(TIME_TO_SEND_EMAIL) )   ) {
-						process.setBadMovement(null);
-						//send email
-						process.setTime_to_send_email(TIME_TO_SEND_EMAIL*10);
-			
-						
-		}
-						
-						
-		
-
 		
 	}
 private void verifyMomentValues() {
@@ -135,9 +116,7 @@ private void verifyMomentValues() {
 	public static int getTimeToWorryMov() {
 		return TIME_TO_WORRY_MOV;
 	}
-	public static int getTimeToSendEmail() {
-		return TIME_TO_SEND_EMAIL;
-	}
+	
 	
 	
 	
