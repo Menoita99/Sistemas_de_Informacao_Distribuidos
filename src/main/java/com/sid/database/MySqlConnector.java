@@ -361,6 +361,57 @@ public class MySqlConnector {
 		}
 
 	}
+	public Round findNextOrCurrentRound(LocalDateTime date) {
+ 		round_list.clear();
+ 		Statement stm = null;
+ 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+ 		String data = date.format(formatter);
+ 		try {
+ 			// vai buscar a tabela da ronda planeada e extra
+ 			stm = connection.createStatement();
+ 			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_inicio=\"" + data + "\" || "
+ 					+ "ronda_inicio >\"" + data + "\" || "
+ 					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
+ 							+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) "
+ 				             + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\" || "
+ 				             + "ronda_inicio >\"" + data + "\" || "
+ 				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
+ 									+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) )"
+ 									+ ")" ;
+
+  			ResultSet ronda_planeada_extra = stm.executeQuery(command);
+ 			read_round(ronda_planeada_extra);
+
+  		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		} finally {
+ 			try {
+ 				stm.close();
+ 			} catch (SQLException e) {
+ 				e.printStackTrace();
+ 			}
+ 		}
+ 			if(!round_list.isEmpty())
+ 				return round_list.get(0);
+ 			else
+ 				return null;
+ 	}
+
+ 
+ 
+ 
+  	private void read_round(ResultSet rp) throws SQLException {
+ 		// read line at a time
+ 		if (rp.next()) {
+ 			String user_mail = rp.getString("email");
+ 			String ronda_inicio = rp.getString("ronda_inicio");
+ 			String ronda_fim = rp.getString("ronda_fim");
+ 			add_round(user_mail, ronda_inicio, ronda_fim);
+
+  		}
+ 	}
+
+ 
 
 	public static void main(String[] args) {
 		int year = 2019;

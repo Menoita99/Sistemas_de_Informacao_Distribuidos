@@ -31,7 +31,6 @@ public class Task implements Runnable {
 			MySqlConnector.getInstance().insertAlarm(alarm);
 		}
 		System.out.println(measures);
-		MySqlConnector.getInstance().saveMeasure(measure);
 		
 		//TODO implement stuff here
 	}
