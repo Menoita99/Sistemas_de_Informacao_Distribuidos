@@ -37,7 +37,9 @@ public class Processor {
 	private Round nextOrCurrentRound;
 	private LocalDateTime lastTimeChecked;
 	private LocalDateTime lastMovement;
-
+	private LocalDateTime badMovement;
+	private int time_to_worry;
+	private int time_to_send_email;
 	
 	
 	
@@ -45,6 +47,8 @@ public class Processor {
 		mysqlConnector = MySqlConnector.getInstance();
 		mongoConnector = MongoConnector.getInstance();
 		mysqlSystem = MysqlSystem.getInstance();
+		time_to_worry = MovementTask.getTimeToWorryMov();
+		time_to_worry = MovementTask.getTimeToSendEmail();
 		workers = new ThreadPool(10);
 	}
 		
@@ -101,10 +105,11 @@ public class Processor {
 			 nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
 			 lastTimeChecked = LocalDateTime.now();
 			 lastMovement= time;
+			 time_to_worry= MovementTask.getTimeToWorryMov();
 			 System.out.println("next round: " + nextOrCurrentRound);
 			 return nextOrCurrentRound;
 			 
-		}else if(nextOrCurrentRound.getRound_begin().isAfter(time) ) //in case an older message pops up is it worth it?
+		}else if(nextOrCurrentRound.getRound_begin().isAfter(time) ) //in case an older message pops up
 			return  mysqlConnector.findNextOrCurrentRound(time);
 		
 		return nextOrCurrentRound;
@@ -122,13 +127,8 @@ public class Processor {
 	public void setLastTimeChecked() {
 		lastTimeChecked = LocalDateTime.now();
 	}
-	public LocalDateTime getLastMovement() {
-		return lastMovement;
-	}
-	public void setLastMovement(LocalDateTime time) {
-		lastMovement= time;
-		
-	}
+
+	
 	
 
 	protected double getTempLimit() {
