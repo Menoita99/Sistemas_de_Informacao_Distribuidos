@@ -1,6 +1,5 @@
 package com.sid.process;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.json.JSONObject;
@@ -15,10 +14,11 @@ import com.sid.util.ThreadPool;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 public class Processor {
+
+	private static final int NUMBER_OF_MEASURES_SAVED = 5;
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	
@@ -36,12 +36,8 @@ public class Processor {
 	private ThreadPool lumWorkers;
 	
 	//variables to help check movement
-	private Round nextRound;
-	private LocalDateTime lastTimeChecked;
-	private LocalDateTime lastMovement;
-	private static final int NUMBER_OF_MEASURES_SAVED = 5;
-	
-	private boolean TempOverLim;
+	private Round nextRounivate;
+	boolean TempOverLim;
 	private boolean HumOverLim;
 	private int TempCooldown;
 	private int HumCooldown;
@@ -113,7 +109,4 @@ public class Processor {
 		System.exit(0);
 	}
 	
-	protected double getTempLimit() {
-		return mysqlSystem.getLimiteTemperatura();
-	}
 }

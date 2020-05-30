@@ -2,10 +2,16 @@ package com.sid.process;
 
 import java.util.ArrayList;
 
+
 import com.sid.database.MySqlConnector;
 import com.sid.models.Alarm;
+
 import com.sid.models.Measure;
 import com.sid.models.TemperatureAlarm;
+
+import lombok.Getter;
+import lombok.Setter;
+
 
 public class TemperatureTask extends Task {
 
@@ -22,24 +28,27 @@ public class TemperatureTask extends Task {
 			System.out.println(tempAlarm);
 			MySqlConnector.getInstance().insertAlarm(tempAlarm);
 		}
+
 		super.run();
 	}
+
 	private Alarm verificarTemperatura() {
 		String descricao = "";
 		Boolean alarming = false;
 		Boolean controlo = false;
+		double limTemp = process.getMysqlSystem().getLimiteTemperatura();
 		double[] tempVals = measures.stream().mapToDouble(measure->measure.getValorTmpMedicao()).toArray();
 		double variance = varianceCheck(tempVals);
 		
 		if(process.isTempOverLim()) {
-			if(this.measure.getValorTmpMedicao() < process.getTempLimit() && (averageValue(tempVals) - process.getTempLimit()) < -4) {
+			if(this.measure.getValorTmpMedicao() < limTemp && (averageValue(tempVals) - limTemp) < -4) {
 				descricao += "Temperatura desceu abaixo do limite";
 				controlo = true;
 				process.setTempOverLim(false);
 				alarming = true;
 			}
 		}else {
-			if(this.measure.getValorTmpMedicao() > process.getTempLimit() && (averageValue(tempVals) - process.getTempLimit()) > -2) {
+			if(this.measure.getValorTmpMedicao() > limTemp && (averageValue(tempVals) - limTemp) > -2) {
 				descricao += "Temperatura ultrapasou o limite";
 				controlo = true;
 				process.setTempOverLim(true);
