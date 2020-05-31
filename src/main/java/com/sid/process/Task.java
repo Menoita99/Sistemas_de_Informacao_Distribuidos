@@ -17,11 +17,12 @@ public class Task implements Runnable {
 	protected String descricao = "";
 	protected Boolean alarming = false;
 	protected Boolean controlo = false;
+	private long debbug_time;
 
 	public Task(ArrayList<Measure> measuresCopy) {
 		this.measures = measuresCopy;
 		this.measure = measures.get(measures.size()-1);
-		// Debug
+		this.debbug_time = process.getDebbugTime();
 		
 		
 		
@@ -32,8 +33,13 @@ public class Task implements Runnable {
 		if(alarm != null) {
 			System.out.println(alarm);
 			MySqlConnector.getInstance().insertAlarm(alarm);
+			long endTime = System.currentTimeMillis();
+			long elapsed_time = endTime-debbug_time;
+			System.out.println("inseri " + alarm +" causado pela measure "+ measure +  " at " +endTime);
+			System.out.println("took : "+ elapsed_time + " miliseconds");
+		
 		}
-		System.out.println(measures);
+		//System.out.println(measures);
 		
 		//TODO implement stuff here
 	}
@@ -43,14 +49,11 @@ public class Task implements Runnable {
 	protected double varianceCheck(double[] vals) {
 		if(vals.length > 1) {
 
-		double variance = getInclination(vals[0], vals[1]);
-		double average;
+		double sum = getInclination(vals[0], vals[1]);
 		for(int i = 1; i != vals.length-1;i++) {
-			average = variance+getInclination(vals[i], vals[i+1]);
-			average /= 2;
-			variance = average;
+			sum += getInclination(vals[i], vals[i+1]);
 		}
-		return variance;
+		return sum/vals.length;
 		}else {
 			return 0;
 		}
