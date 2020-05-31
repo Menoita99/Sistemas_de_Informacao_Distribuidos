@@ -163,7 +163,6 @@ public class MongoConnector {
 	 * @param alarm
 	 */
 	public void insertAlarm(Alarm alarm) {
-		
 		Document alarmDoc = new Document();
 		alarmDoc.put("valorMedicao", alarm.getValorMedicao());
 		alarmDoc.put("limite", alarm.getLimite());
@@ -173,7 +172,6 @@ public class MongoConnector {
 		alarmDoc.put("dataHoraMedicao", alarm.getDataHoraMedicao());
 		alarmDoc.put("controlo", alarm.getControlo());	
 		alarmsCollection.insertOne(alarmDoc);
-		System.out.println("Inserted alarm: " + alarmDoc.toJson());
 	}
 	
 	
@@ -189,7 +187,6 @@ public class MongoConnector {
 		while(iterator.hasNext())
 			alarms.add(iterator.next());
 		return alarms;
-		
 	}
 	
 	/**
