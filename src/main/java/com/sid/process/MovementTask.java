@@ -16,18 +16,16 @@ public class MovementTask extends Task {
 	private int first;
 
 	private Round nextOrCurrentRound;
-	private LocalDateTime lastMovement;
 
 
 
 
 	public MovementTask(ArrayList<Measure> measuresCopy) {
 		super(measuresCopy);
-		System.out.println("before initializing");
+		//System.out.println("before initializing");
 		nextOrCurrentRound = process.getNextOrCurrentRound();
-		lastMovement = process.getLastMovement();
 		first =measures.size() -1;
-		System.out.println("after initializing");
+		//System.out.println("after initializing");
 	}
 
 	
@@ -56,9 +54,9 @@ public class MovementTask extends Task {
 		if(nextOrCurrentRound!= null && isCurrentRound(time) ) {
 
 			process.increment_counter_to_worry();
-			System.out.println("Inside there is a round Counter " + process.getCounter_to_worry());
+			//System.out.println("Inside there is a round Counter " + process.getCounter_to_worry());
 			verifyRound(time);
-			System.out.println("On current round counter: " + process.getCounter_to_worry());
+			//System.out.println("On current round counter: " + process.getCounter_to_worry());
 
 			//se não estiver a ocorrer ronda	
 		}else {
@@ -119,13 +117,9 @@ public class MovementTask extends Task {
 					break;
 				}
 
-			if(moved) {
-				//process.setTime_to_worry(TIME_TO_WORRY_MOV);
-				process.setLastMovement(time); //tres mensagens
-				lastMovement=process.getLastMovement();
-				System.out.println("Moved" +lastMovement);
+			if(moved) {				
 				process.reset_counter_to_worry();
-				System.out.println("Counter " + process.getCounter_to_worry());
+				//System.out.println("Counter " + process.getCounter_to_worry());
 			}
 		}
 
@@ -138,7 +132,6 @@ public class MovementTask extends Task {
 			process.reset_counter_to_worry();
 			System.out.println("Reset Counter " + process.getCounter_to_worry());
 		}
-		//process.setTime_to_worry(TIME_TO_WORRY_MOV*2);
 	}
 
 
@@ -174,7 +167,6 @@ public class MovementTask extends Task {
 					process.activateCooldown();
 					System.out.println("Set Counter to cooldown " + process.getCooldown());
 
-					//process.setTime_to_worry(TIME_TO_WORRY_MOV*2);
 				}
 			}
 		}
