@@ -3,6 +3,7 @@ package com.sid.process;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 import org.json.JSONObject;
 
@@ -22,9 +23,10 @@ import lombok.Data;
 public class Processor {
 	
 	private static final String EMAIL_SUBJECT = "URGENTE MAL FUNCIONAMENTO SENSOR ";
-	private static final String EMAIL_FIELD = "Urgente! Estão a ser enviadas mensagens inválidas através do sensor de ";
+	private static final String EMAIL_FIELD = "Urgente! Estï¿½o a ser enviadas mensagens invï¿½lidas atravï¿½s do sensor de ";
 
-	private static final int NUMBER_OF_MEASURES_SAVED = 2;
+	private static final int NUMBER_OF_MEASURES_SAVED = 5;
+	private static final int NUMBER_OF_MEASURES_SAVED_MOV = 3;
 	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
 	private static final int NUMBER_WRONG__TO_EMAIL = 20;
 	private static final int NUMBER_RIGHT__TO_RESET = 5;
@@ -92,6 +94,8 @@ public class Processor {
 	private int HumCooldown;
 	private int TempStatus;
 	private int HumStatus;
+	
+    private long debbugTime;
 
 
 
@@ -132,9 +136,12 @@ public class Processor {
 	public void Process() {
 		while(true) {
 			JSONObject jobj = mongoConnector.read();
+			
 			try {
+				
 				Measure measure = new Measure(jobj);
-				measures.add(measure);//this is just used for graphic interface
+				debbugTime = System.currentTimeMillis();
+				System.out.println("recebi " + measure+  " at " + debbugTime);
 				addAndTreatMeasure(measure);
 				MySqlConnector.getInstance().saveMeasure(measure);
 				 
@@ -161,7 +168,7 @@ public class Processor {
 
 	public void addAndTreatMeasure(Measure newMeasure) {
 		measures.add(newMeasure);
-		if (measures.size() >= NUMBER_OF_MEASURES_SAVED) {
+		if (measures.size() > NUMBER_OF_MEASURES_SAVED) {
 			measures.remove(0);
 		}
 		addTempMeasure(newMeasure);
@@ -262,7 +269,7 @@ public class Processor {
 
 		if(newMeasure.isControloMov()) {
 			movMeasures.add(newMeasure);
-			if (movMeasures.size() > NUMBER_OF_MEASURES_SAVED) {
+			if (movMeasures.size() > NUMBER_OF_MEASURES_SAVED_MOV) {
 				movMeasures.remove(0);
 			}
 			movWorkers.submit(new MovementTask(new ArrayList<Measure>(movMeasures)));
