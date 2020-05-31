@@ -425,15 +425,19 @@ public class MySqlConnector {
 
 	public void insertAlarm(Alarm a) {
 		Statement stm = null;
+
 		if (a != null) {
 			try {
 				stm = connection.createStatement();
+
+				if(!find_alarm(a)) {
 				String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
 						+ "VALUES ( '" + a.getDataHoraMedicao() + "', '" + a.getTipoSensor() + "', '"
 						+ a.getValorMedicao() + "', '" + a.getLimite() + "', '" + a.getDescricao() + "','"
 						+ a.getControlo() + "' , '" + a.getExtra() + "');";
 				int tp = stm.executeUpdate(command);
 				System.out.println(tp);
+				}
 			} catch (SQLException e) {
 				connectionErrorEmail();
 				e.printStackTrace();
@@ -446,6 +450,29 @@ public class MySqlConnector {
 			}
 		}
 
+	}
+
+	private boolean find_alarm(Alarm a) {
+		Statement exist_alert_stm = null;
+		try {
+			String command = "SELECT * FROM sid_2.alerta where DataHoraMedicao = '"+a.getDataHoraMedicao()+"' and TipoSensor = '"+a.getTipoSensor()+"' and ValorMedicao = "+a.getValorMedicao()+" and Limite = "+a.getLimite()+" and Descricao = '"+a.getDescricao()+"' and Controlo = '"+a.getControlo()+"' and Extra ='"+a.getExtra()+"'";
+
+			exist_alert_stm = connection.createStatement();
+			ResultSet tp = exist_alert_stm.executeQuery(command);
+			while(tp.next()) {
+				return true;
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				exist_alert_stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 
 
@@ -538,17 +565,13 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		//		int year = 2019;
-		//		int month = 12;
-		//		int dayOfMonth = 31;
-		//		int hour = 02;
-		//
-		//		int minute = 00;
-		//		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
-		//		Alarm aa = new Alarm(40.2, "hum", LocalDateTime.now(), 40.2, "2", "1", true);
-		//		getInstance().insertAlarm(aa);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime dateTime = LocalDateTime.parse("2020-05-31 19:26:30", formatter);
+		Alarm aa = new Alarm(40.2, "hum", dateTime, 40.2, "2", "1", true);
+		getInstance().insertAlarm(aa);
+		//getInstance().find_alarm(aa);
 		//		System.out.println("s");
-		System.out.println(getInstance().findRondaByDate(LocalDateTime.now()));
+		//System.out.println(getInstance().findRondaByDate(LocalDateTime.now()));
 		//	 System.out.println(getInstance().findAllRondasBiggerThen(LocalDateTime.now()));
 		//
 		// System.out.println(getInstance().findLastDangerAlarm());
