@@ -47,29 +47,6 @@ LOCK TABLES `alerta` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `diasemana`
---
-
-DROP TABLE IF EXISTS `diasemana`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `diasemana` (
-  `DiaSemana` varchar(20) NOT NULL,
-  `HoraRonda` varchar(20) NOT NULL,
-  PRIMARY KEY (`DiaSemana`,`HoraRonda`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `diasemana`
---
-
-LOCK TABLES `diasemana` WRITE;
-/*!40000 ALTER TABLE `diasemana` DISABLE KEYS */;
-/*!40000 ALTER TABLE `diasemana` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `medicaosensores`
 --
 
@@ -208,4 +185,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-23 22:25:06
+-- Dump completed on 2020-05-31 13:26:33
