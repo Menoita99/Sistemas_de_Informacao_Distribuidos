@@ -24,9 +24,6 @@ public class Processor {
 	private static final int NUMBER_WRONG__TO_EMAIL = 20;
 	private static final int NUMBER_RIGHT__TO_RESET = 5;
 	private static final int NUMBER_RESET_COOLDOWN = 21600;
-	
-	
-	
 
 	private static Processor INSTANCE; //this is used by performance monitor
 	private ObservableList<Measure> measures = FXCollections.observableArrayList();
@@ -167,17 +164,18 @@ public class Processor {
 		
 		
 	}
+
+	
+	
+	
+	
 	
 	private void addTempMeasure(Measure newMeasure) {
-		
-		
 		if(temp_sent_email) {
 			temp_send_email_cooldown--;
 			if(temp_send_email_cooldown<=0)
 				temp_sent_email=false;
-				
 		}
-		
 		
 		if(newMeasure.isControloTmp()) {
 			tempMeasures.add(newMeasure);
@@ -190,11 +188,8 @@ public class Processor {
 			if(rightMeasuresTemp >= NUMBER_RIGHT__TO_RESET) {
 				wrongMeasuresTemp = 0;
 				rightMeasuresTemp = 0;
-				
-				
 			}
 				
-
 			}else{
 				wrongMeasuresTemp++;
 				rightMeasuresTemp = 0;

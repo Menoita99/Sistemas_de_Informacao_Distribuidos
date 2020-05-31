@@ -27,8 +27,13 @@ public class MySqlConnector {
 	private static MySqlConnector INSTANCE;
 	private ArrayList<Round> round_list = new ArrayList<>();
 
-	private static Connection connection;
+	private Connection connection;
 
+	
+	
+	
+	
+	
 	public MySqlConnector() {
 		String dbUrl = "";
 		String user = "";
@@ -59,6 +64,11 @@ public class MySqlConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -71,12 +81,22 @@ public class MySqlConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
 		return INSTANCE;
 	}
 
+	
+	
+	
+	
+	
 	public List<Object> getSystemValues() {
 		List<Object> output = new ArrayList<>();
 		Statement stm = null;
@@ -103,6 +123,11 @@ public class MySqlConnector {
 		return output;
 	}
 
+	
+	
+	
+	
+	
 	public boolean saveMeasure(Measure m) {
 		Statement stm = null;
 		try {
@@ -137,10 +162,8 @@ public class MySqlConnector {
 				stm.executeUpdate(query);
 
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
-			//System.out.println("Saved -> " + m);
 		} catch (SQLException e) {
-			System.out.println(
-					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			System.out.println("[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
 			e.printStackTrace();
 		} finally {
 			try {
@@ -152,37 +175,44 @@ public class MySqlConnector {
 		return false;
 	}
 
+	
+	
+	
+	
+	
 	private void checkForUnsavedMeasures() {
 		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
 		for (Measure measure : unsavedMeasures)
 			saveMeasure(measure);
 	}
 
+	
+	
+	
+	
+	
 	public boolean[] checkForDuplicates(Measure m) {
 		boolean[] duplicates = new boolean[4];
 		Statement stm = null;
 		try {
 			stm = connection.createStatement();
 			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao();//.plusHours(1);
-			ResultSet hum = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
+			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
 							+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[0] = hum.next();
 
-			ResultSet temp = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
+			ResultSet temp = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
 							+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[1] = temp.next();
 
-			ResultSet mov = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
+			ResultSet mov = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
 							+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[2] = mov.next();
 
-			ResultSet lum = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
+			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
 							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -195,6 +225,11 @@ public class MySqlConnector {
 		return duplicates;
 	}
 
+	
+	
+	
+	
+	
 	public Round findRondaByDate(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
@@ -221,6 +256,11 @@ public class MySqlConnector {
 		return round_list.get(0);
 	}
 
+	
+	
+	
+	
+	
 	private void reading_rounds_table(ResultSet rp) throws SQLException {
 		// read line at a time
 		while (rp.next()) {
@@ -233,11 +273,20 @@ public class MySqlConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
 		round_list.add(new Round(user_mail, ronda_inicio, ronda_fim));
-
 	}
 
+	
+	
+	
+	
+	
 	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
@@ -267,6 +316,11 @@ public class MySqlConnector {
 		return round_list;
 	}
 
+	
+	
+	
+	
+	
 	public Alarm findLastSevereAlarm() {
 		Statement stm = null;
 		Alarm a = null;
@@ -291,6 +345,11 @@ public class MySqlConnector {
 
 	}
 
+	
+	
+	
+	
+	
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
 		Alarm a = null;
 		while (tp.next()) {
@@ -310,11 +369,21 @@ public class MySqlConnector {
 		return a;
 	}
 
+	
+	
+	
+	
+	
 	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description,
 			boolean control, String extra) {
 		return new Alarm(value_med, limit, tipo, extra, description, data, control);
 	}
 
+	
+	
+	
+	
+	
 	public Alarm findLastDangerAlarm() {
 		Statement stm = null;
 		Alarm a = null;
@@ -338,6 +407,11 @@ public class MySqlConnector {
 		return a;
 	}
 
+	
+	
+	
+	
+	
 	public void insertAlarm(Alarm a) {
 		Statement stm = null;
 		if (a != null) {
@@ -361,6 +435,12 @@ public class MySqlConnector {
 		}
 
 	}
+
+	
+	
+	
+	
+	
 	public Round findNextOrCurrentRound(LocalDateTime date) {
  		round_list.clear();
  		Statement stm = null;
@@ -397,9 +477,11 @@ public class MySqlConnector {
  				return null;
  	}
 
- 
- 
- 
+	
+	
+	
+	
+	 
   	private void read_round(ResultSet rp) throws SQLException {
  		// read line at a time
  		if (rp.next()) {
@@ -410,25 +492,4 @@ public class MySqlConnector {
 
   		}
  	}
-
- 
-
-	public static void main(String[] args) {
-		int year = 2019;
-		int month = 12;
-		int dayOfMonth = 31;
-		int hour = 02;
-
-		int minute = 00;
-		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
-		Alarm aa = new Alarm(40.2, "hum", LocalDateTime.now(), 40.2, "2", "1", true);
-		getInstance().insertAlarm(aa);
-		System.out.println("s");
-		// System.out.println(getInstance().findRondaByDate(date));
-		// System.out.println(getInstance().findAllRondasBiggerThen(date));
-		//
-		// System.out.println(getInstance().findLastDangerAlarm());
-		// System.out.println(getInstance().findLastSevereAlarm());
-
-	}
 }
