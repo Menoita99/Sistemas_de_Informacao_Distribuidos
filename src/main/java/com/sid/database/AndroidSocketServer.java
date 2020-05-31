@@ -8,6 +8,8 @@ import java.net.Socket;
 
 import org.json.JSONObject;
 
+import com.sid.models.MysqlSystem;
+
 public class AndroidSocketServer {
 	
 	private static AndroidSocketServer INSTANCE;
@@ -42,7 +44,6 @@ public class AndroidSocketServer {
 			ObjectInputStream input = new ObjectInputStream(android.getInputStream());
 			ObjectOutputStream output = new ObjectOutputStream(android.getOutputStream());
 
-			//RECEBES ISTO
 			//{"limiteLuminosidade":20,"margemLuminosidade":20,"limiteHumidade":30,"margemTemperatura":0,"limiteTemperatura":50,"margemHumidade":0}
 			String inputSys = (String) input.readObject(); 
 
@@ -50,6 +51,11 @@ public class AndroidSocketServer {
 
 			System.out.println("Received -> "+inputSys);
 
+			//update sistema table with values
+			MySqlConnector.getInstance().updateSistema(modifiedObj.getDouble("limiteLuminosidade"), modifiedObj.getDouble("margemLuminosidade"), modifiedObj.getDouble("limiteHumidade"), modifiedObj.getDouble("margemHumidade"), modifiedObj.getDouble("limiteTemperatura"), modifiedObj.getDouble("margemTemperatura"));
+			//update MysqlSystem attribute values
+			MysqlSystem.getInstance().setSystemValues();
+			
 			//retorna um JSONObject.toString();
 			output.writeObject(modifiedObj.toString());
 		} catch (IOException | ClassNotFoundException e) {
@@ -66,5 +72,4 @@ public class AndroidSocketServer {
 			INSTANCE = new AndroidSocketServer();
 		return INSTANCE;
 	}
-
 }
