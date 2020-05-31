@@ -106,10 +106,8 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			default: {
-
 				System.out.println("im Out " + process.getTempStatus());
 				process.setTempStatus(0);
-
 			}
 			}
 		}
