@@ -134,9 +134,10 @@ public class Processor {
 			JSONObject jobj = mongoConnector.read();
 			try {
 				Measure measure = new Measure(jobj);
+				measures.add(measure);//this is just used for graphic interface
 				addAndTreatMeasure(measure);
 				MySqlConnector.getInstance().saveMeasure(measure);
-				measures.add(measure); //this is just used for graphic interface
+				 
 			} catch (Exception e) {
 				System.err.println("[Warning] Could not read -> "+jobj);
 				e.printStackTrace();
@@ -165,7 +166,7 @@ public class Processor {
 		}
 		addTempMeasure(newMeasure);
 		addHumMeasure(newMeasure);
-		addMovMeasure(newMeasure);
+//		addMovMeasure(newMeasure);
 		addLumMeasure(newMeasure);
 	}
 

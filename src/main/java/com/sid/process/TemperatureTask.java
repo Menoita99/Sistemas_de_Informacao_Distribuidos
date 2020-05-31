@@ -32,9 +32,9 @@ public class TemperatureTask extends Task {
 //		double varianceLimit = process.getStandardTempVariation();
 
 		if (Math.abs(variance) > 5) {
-			System.out.println("i'm quarentined :" + variance + " || " + 5);
+//			System.out.println("i'm quarentined :" + variance + " || " + 5);
 		} else {
-			System.out.println("i was let tru :" + variance + " || " + 5);
+//			System.out.println("i was let tru :" + variance + " || " + 5);
 			if (process.isTempOverLim()) {
 				if (this.measure.getValorTmpMedicao() < limTemp && (averageTemp - limTemp) < -4) {
 					descricao += "Temperatura desceu abaixo do limite";
@@ -55,7 +55,7 @@ public class TemperatureTask extends Task {
 
 			switch (process.getTempStatus()) {
 			case 0: {
-				// System.out.println("im in 0");
+				 System.out.println("im in 0");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -72,7 +72,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case 1: {
-				// System.out.println("im in 1");
+				 System.out.println("im in 1");
 				if (variance > -0.2 && variance < 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -89,7 +89,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case -1: {
-				// System.out.println("im in -1");
+				 System.out.println("im in -1");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -108,15 +108,16 @@ public class TemperatureTask extends Task {
 			default: {
 				System.out.println("im Out " + process.getTempStatus());
 				process.setTempStatus(0);
+				break;
 			}
 			}
 		}
 
 // System.out.println("BBBBBBBBBB");
 		if (process.getTempCooldown() <= 0 && !process.isTempOverLim()) {
-			System.out.println(limTemp - averageTemp + "||" + margin);
+//			System.out.println(limTemp - averageTemp + "||" + margin);
 			if ((limTemp - averageTemp) < margin) {
-				System.out.println("im getting there");
+//				System.out.println("im getting there");
 				if (alarming)
 					descricao += " e ";
 				descricao += "Temperatura proxima do limite";
