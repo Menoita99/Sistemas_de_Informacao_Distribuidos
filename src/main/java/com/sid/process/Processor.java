@@ -166,7 +166,7 @@ public class Processor {
 		}
 		addTempMeasure(newMeasure);
 		addHumMeasure(newMeasure);
-		//addMovMeasure(newMeasure);
+		addMovMeasure(newMeasure);
 		addLumMeasure(newMeasure);
 	}
 
