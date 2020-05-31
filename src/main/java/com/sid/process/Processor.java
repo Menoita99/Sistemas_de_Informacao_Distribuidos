@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import com.sid.database.MongoConnector;
 import com.sid.database.MySqlConnector;
+import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.MysqlSystem;
 import com.sid.models.Round;
@@ -17,6 +18,7 @@ import com.sid.util.ThreadPool;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import lombok.Data;
 
 @Data
@@ -211,6 +213,9 @@ public class Processor {
 				rightMeasuresTemp = 0;
 				if (wrongMeasuresTemp >= NUMBER_WRONG__TO_EMAIL && !temp_sent_email ) {
 					EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Temperatura");
+					Alarm aviso_sensor = new Alarm(0,"tmp",newMeasure.getDataHoraMedicao(),
+                            0.0, "sensor temperatura pode estar estragado", "erros medição", true);
+                    MySqlConnector.getInstance().insertAlarm(aviso_sensor);
 					wrongMeasuresTemp = 0;
 					temp_sent_email=true;
 					temp_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -250,6 +255,9 @@ public class Processor {
 			rightMeasuresHum = 0;
 			if (wrongMeasuresHum >= NUMBER_WRONG__TO_EMAIL && !hum_sent_email ) {
 				EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Movimento");
+				Alarm aviso_sensor = new Alarm(0,"hum",newMeasure.getDataHoraMedicao(),
+                        0.0, "sensor humidade pode estar estragado", "erros medição", true);
+                MySqlConnector.getInstance().insertAlarm(aviso_sensor);
 				wrongMeasuresHum = 0;
 				hum_sent_email=true;
 				hum_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -288,6 +296,9 @@ public class Processor {
 			rightMeasuresMov = 0;
 			if (wrongMeasuresMov >= NUMBER_WRONG__TO_EMAIL && !mov_sent_email ) {
 				EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Movimento");
+				Alarm aviso_sensor = new Alarm(0,"mov",newMeasure.getDataHoraMedicao(),
+                        0.0, "sensor movimento pode estar estragado", "erros medição", true);
+                MySqlConnector.getInstance().insertAlarm(aviso_sensor);
 				wrongMeasuresMov = 0;
 				mov_sent_email=true;
 				mov_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -323,6 +334,9 @@ public class Processor {
 			rightMeasuresLum = 0;
 			if (wrongMeasuresLum >= NUMBER_WRONG__TO_EMAIL && !lum_sent_email ) {
 				EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Luminosidade");
+				Alarm aviso_sensor = new Alarm(0,"lum",newMeasure.getDataHoraMedicao(),
+                        0.0, "sensor  luminosidade pode estar estragado", "erros medição", true);
+                MySqlConnector.getInstance().insertAlarm(aviso_sensor);
 				wrongMeasuresLum = 0;
 				lum_sent_email=true;
 				lum_send_email_cooldown = NUMBER_RESET_COOLDOWN;
