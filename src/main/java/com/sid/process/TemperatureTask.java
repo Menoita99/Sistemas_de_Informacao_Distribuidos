@@ -127,6 +127,9 @@ public class TemperatureTask extends Task {
 				alarming = true;
 			}
 		} else if (process.getTempCooldown() > 0) {
+			if((limTemp - averageTemp) > margin){
+				process.setTempCooldown(process.getTempCooldown() - (process.getTEMP_COOLDOWN_VALUE()/10));
+			}
 			process.setTempCooldown(process.getTempCooldown() - 1);
 		}
 
