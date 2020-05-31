@@ -23,7 +23,8 @@ import lombok.Data;
 public class Processor {
 	
 	private static final String EMAIL_SUBJECT = "URGENTE MAL FUNCIONAMENTO SENSOR ";
-	private static final String EMAIL_FIELD = "Urgente! Est�o a ser enviadas mensagens inv�lidas atrav�s do sensor de ";
+	private static final String EMAIL_FIELD = "Urgente! Estao a ser enviadas mensagens invalidas atrav�s do sensor de ";
+
 
 	private static final int NUMBER_OF_MEASURES_SAVED = 2;
 	private static final int NUMBER_OF_MEASURES_SAVED_MOV = 3;
@@ -144,7 +145,7 @@ public class Processor {
 				System.out.println("recebi " + measure+  " at " + debbugTime);
 				addAndTreatMeasure(measure);
 				MySqlConnector.getInstance().saveMeasure(measure);
-				measures.add(measure); //this is just used for graphic interface
+				 
 			} catch (Exception e) {
 				System.err.println("[Warning] Could not read -> "+jobj);
 				e.printStackTrace();
@@ -173,7 +174,7 @@ public class Processor {
 		}
 		addTempMeasure(newMeasure);
 		addHumMeasure(newMeasure);
-		addMovMeasure(newMeasure);
+//		addMovMeasure(newMeasure);
 		addLumMeasure(newMeasure);
 	}
 
