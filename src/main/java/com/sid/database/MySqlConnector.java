@@ -513,7 +513,7 @@ public class MySqlConnector {
 					+ ", limiteTemperatura = " + limtmp
 					+ ", margem_Temperatura = " + martmp;
 
-			stm.executeQuery(command);
+			stm.executeUpdate(command);
 
 		} catch (SQLException e) {
 			connectionErrorEmail();
