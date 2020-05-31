@@ -23,7 +23,7 @@ public class Processor {
 
 
 	private static final String EMAIL_SUBJECT = "URGENTE MAL FUNCIONAMENTO SENSOR ";
-	private static final String EMAIL_FIELD = "Urgente! Estão a ser enviadas mensagens inválidas através do sensor de ";
+	private static final String EMAIL_FIELD = "Urgente! Estao a ser enviadas mensagens invalidas atravï¿½s do sensor de ";
 
 	private static final int NUMBER_OF_MEASURES_SAVED = 5;
 	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
