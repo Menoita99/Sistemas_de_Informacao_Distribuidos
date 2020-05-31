@@ -21,6 +21,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.Round;
+import com.sid.process.Processor;
 import com.sid.util.EmailSender;
 
 public class MySqlConnector {
@@ -28,8 +29,12 @@ public class MySqlConnector {
 	private static MySqlConnector INSTANCE;
 	private ArrayList<Round> round_list = new ArrayList<>();
 
-	private static Connection connection;
+	private Connection connection;
 
+	
+	
+	
+	
 	public MySqlConnector() {
 		String dbUrl = "";
 		String user = "";
@@ -44,14 +49,8 @@ public class MySqlConnector {
 			connection = DriverManager.getConnection(dbUrl, user, password);
 
 			new Thread(() -> {
-				// TODO Process this measures if not processed (Maybe add a field processed in
-				// mongoDB collection document)
-				checkForUnsavedMeasures();
-				try {
-					Thread.sleep(30000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				checkForUnsavedObjects();
+				try { Thread.sleep(30000); } catch (InterruptedException e) { e.printStackTrace();}
 			}).start();
 
 		} catch (IOException | ClassNotFoundException | SQLException e) {
@@ -60,6 +59,11 @@ public class MySqlConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -72,12 +76,22 @@ public class MySqlConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	public static MySqlConnector getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new MySqlConnector();
 		return INSTANCE;
 	}
 
+	
+	
+	
+	
+	
 	public List<Object> getSystemValues() {
 		List<Object> output = new ArrayList<>();
 		Statement stm = null;
@@ -105,6 +119,11 @@ public class MySqlConnector {
 		return output;
 	}
 
+	
+	
+	
+	
+	
 	public boolean saveMeasure(Measure m) {
 		Statement stm = null;
 		try {
@@ -112,7 +131,7 @@ public class MySqlConnector {
 			stm = connection.createStatement();
 			String query = "INSERT INTO medicaosensores (ValorMedicao, TipoSensor, DataHoraMedicao, Controlo, Extra)  VALUES ";
 			boolean modified = false;
-			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao();//.plusHours(1);
 
 			if (!duplicatesCheck[0]) {// HUMIDITY
 				query += (modified ? "," : "") + "(" + m.getValorHumMedicao() + ", 'HUM' , '" + dataHoraMedicao + "', "
@@ -139,7 +158,6 @@ public class MySqlConnector {
 				stm.executeUpdate(query);
 
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
-			//System.out.println("Saved -> " + m);
 		} catch (SQLException e) {
 			System.out.println(
 					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
@@ -155,37 +173,50 @@ public class MySqlConnector {
 		return false;
 	}
 
-	private void checkForUnsavedMeasures() {
+	
+	
+	
+	
+	
+	private void checkForUnsavedObjects() {
 		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
-		for (Measure measure : unsavedMeasures)
+		for (Measure measure : unsavedMeasures) {
+			Processor.getInstance().addAndTreatMeasure(measure);
 			saveMeasure(measure);
+		}
+		
+		List<Alarm> unsavedAlarms = MongoConnector.getInstance().findAllAlarms();
+		for (Alarm alarm : unsavedAlarms)
+			insertAlarm(alarm);
 	}
 
+	
+	
+	
+	
+	
 	public boolean[] checkForDuplicates(Measure m) {
 		boolean[] duplicates = new boolean[4];
 		Statement stm = null;
 		try {
 			stm = connection.createStatement();
-			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao().plusHours(1);
-			ResultSet hum = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
+			LocalDateTime dataHoraMedicao = m.getDataHoraMedicao();//.plusHours(1);
+			ResultSet hum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorHumMedicao()
 							+ " and TipoSensor = 'HUM' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[0] = hum.next();
 
-			ResultSet temp = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
+			ResultSet temp = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorTmpMedicao()
 							+ " and TipoSensor = 'TMP' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[1] = temp.next();
 
-			ResultSet mov = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
+			ResultSet mov = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorMovMedicao()
 							+ " and TipoSensor = 'MOV' and DataHoraMedicao = '" + dataHoraMedicao + "';");
 			duplicates[2] = mov.next();
 
-			ResultSet lum = stm
-					.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
+			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
 							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
+			
 		} catch (SQLException e) {
 			connectionErrorEmail();
 			e.printStackTrace();
@@ -199,6 +230,11 @@ public class MySqlConnector {
 		return duplicates;
 	}
 
+	
+	
+	
+	
+	
 	public Round findRondaByDate(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
@@ -226,6 +262,11 @@ public class MySqlConnector {
 		return round_list.get(0);
 	}
 
+	
+	
+	
+	
+	
 	private void reading_rounds_table(ResultSet rp) throws SQLException {
 		// read line at a time
 		while (rp.next()) {
@@ -238,11 +279,20 @@ public class MySqlConnector {
 		}
 	}
 
+	
+	
+	
+	
+	
 	private void add_round(String user_mail, String ronda_inicio, String ronda_fim) {
 		round_list.add(new Round(user_mail, ronda_inicio, ronda_fim));
-
 	}
 
+	
+	
+	
+	
+	
 	public ArrayList<Round> findAllRondasBiggerThen(LocalDateTime date) {
 		round_list.clear();
 		Statement stm = null;
@@ -273,6 +323,11 @@ public class MySqlConnector {
 		return round_list;
 	}
 
+	
+	
+	
+	
+	
 	public Alarm findLastSevereAlarm() {
 		Statement stm = null;
 		Alarm a = null;
@@ -298,6 +353,11 @@ public class MySqlConnector {
 
 	}
 
+	
+	
+	
+	
+	
 	private Alarm reading_alert_table(ResultSet tp) throws SQLException {
 		Alarm a = null;
 		while (tp.next()) {
@@ -317,11 +377,21 @@ public class MySqlConnector {
 		return a;
 	}
 
+	
+	
+	
+	
+	
 	private Alarm add_alarm(LocalDateTime data, String tipo, Double value_med, Double limit, String description,
 			boolean control, String extra) {
 		return new Alarm(value_med, limit, tipo, extra, description, data, control);
 	}
 
+	
+	
+	
+	
+	
 	public Alarm findLastDangerAlarm() {
 		Statement stm = null;
 		Alarm a = null;
@@ -346,6 +416,11 @@ public class MySqlConnector {
 		return a;
 	}
 
+	
+	
+	
+	
+	
 	public void insertAlarm(Alarm a) {
 		Statement stm = null;
 		if (a != null) {
@@ -370,42 +445,12 @@ public class MySqlConnector {
 		}
 
 	}
-//	public Round findNextOrCurrentRound(LocalDateTime date) {
-// 		round_list.clear();
-// 		Statement stm = null;
-// 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-// 		String data = date.format(formatter);
-// 		try {
-// 			// vai buscar a tabela da ronda planeada e extra
-// 			stm = connection.createStatement();
-// 			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_inicio=\"" + data + "\" || "
-// 					+ "ronda_inicio >\"" + data + "\" || "
-// 					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
-// 							+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) "
-// 				             + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\" || "
-// 				             + "ronda_inicio >\"" + data + "\" || "
-// 				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
-// 									+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) )"
-// 									+ ")" ;
-//
-//  			ResultSet ronda_planeada_extra = stm.executeQuery(command);
-// 			read_round(ronda_planeada_extra);
-//
-//  		} catch (SQLException e) {
-// 			e.printStackTrace();
-// 		} finally {
-// 			try {
-// 				stm.close();
-// 			} catch (SQLException e) {
-// 				e.printStackTrace();
-// 			}
-// 		}
-// 			if(!round_list.isEmpty())
-// 				return round_list.get(0);
-// 			else
-// 				return null;
-// 	}
 
+	
+	
+	
+	
+	
 	public Round findNextOrCurrentRound(LocalDateTime date) {
  		round_list.clear();
  		Statement stm = null;
@@ -437,9 +482,11 @@ public class MySqlConnector {
  				return null;
  	}
 
- 
- 
- 
+	
+	
+	
+	
+	 
   	private void read_round(ResultSet rp) throws SQLException {
  		// read line at a time
  		if (rp.next()) {

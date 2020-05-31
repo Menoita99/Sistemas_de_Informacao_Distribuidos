@@ -30,8 +30,7 @@ public class TemperatureTask extends Task {
 		double variance = varianceCheck(tempVals);
 		double averageTemp = averageValue(tempVals);
 //		double varianceLimit = process.getStandardTempVariation();
-		
-		
+
 		if (Math.abs(variance) > 5) {
 			System.out.println("i'm quarentined :" + variance + " || " + 5);
 		} else {
@@ -106,14 +105,16 @@ public class TemperatureTask extends Task {
 				}
 				break;
 			}
-			default:
+			default: {
 
 				System.out.println("im Out " + process.getTempStatus());
 				process.setTempStatus(0);
 
 			}
+			}
 		}
-		//System.out.println("BBBBBBBBBB");
+
+// System.out.println("BBBBBBBBBB");
 		if (process.getTempCooldown() <= 0 && !process.isTempOverLim()) {
 			System.out.println(limTemp - averageTemp + "||" + margin);
 			if ((limTemp - averageTemp) < margin) {
@@ -127,7 +128,7 @@ public class TemperatureTask extends Task {
 		} else if (process.getTempCooldown() > 0) {
 			process.setTempCooldown(process.getTempCooldown() - 1);
 		}
-		
+
 		if (alarming) {
 			return new TemperatureAlarm(measure, descricao, controlo);
 		} else {
