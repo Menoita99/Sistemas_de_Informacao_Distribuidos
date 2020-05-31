@@ -21,6 +21,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.Round;
+import com.sid.util.EmailSender;
 
 public class MySqlConnector {
 
@@ -92,6 +93,7 @@ public class MySqlConnector {
 			output.add(rs.getDouble("margem_luminosidade"));
 		} catch (SQLException e) {
 			System.err.println("Something happened while fecthing Sistema values\nVerify if Sistema has values");
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -141,6 +143,7 @@ public class MySqlConnector {
 		} catch (SQLException e) {
 			System.out.println(
 					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -184,6 +187,7 @@ public class MySqlConnector {
 							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -210,6 +214,7 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -255,6 +260,7 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -279,6 +285,7 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -327,6 +334,7 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -350,6 +358,7 @@ public class MySqlConnector {
 				int tp = stm.executeUpdate(command);
 				System.out.println(tp);
 			} catch (SQLException e) {
+				connectionErrorEmail();
 				e.printStackTrace();
 			} finally {
 				try {
@@ -413,6 +422,7 @@ public class MySqlConnector {
  			read_round(ronda_planeada_extra);
 
   		} catch (SQLException e) {
+  			connectionErrorEmail();
  			e.printStackTrace();
  		} finally {
  			try {
@@ -458,6 +468,7 @@ public class MySqlConnector {
 			stm.executeQuery(command);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -468,6 +479,13 @@ public class MySqlConnector {
 		}
 
 	}
+  	
+  	
+  	public void connectionErrorEmail() {
+  		String subject = "URGENT - Connection to DB unreachable";
+  		String text = "Java mongoTOmysql was not able to reach Mysql DB\nContact engineers!";
+  		EmailSender.sendEmail(subject, text);
+  	}
 
  
 
