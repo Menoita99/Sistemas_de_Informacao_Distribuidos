@@ -33,7 +33,7 @@ public class Task implements Runnable {
 			System.out.println(alarm);
 			MySqlConnector.getInstance().insertAlarm(alarm);
 		}
-		System.out.println(measures);
+		//System.out.println(measures);
 		
 		//TODO implement stuff here
 	}
@@ -43,14 +43,11 @@ public class Task implements Runnable {
 	protected double varianceCheck(double[] vals) {
 		if(vals.length > 1) {
 
-		double variance = getInclination(vals[0], vals[1]);
-		double average;
+		double sum = getInclination(vals[0], vals[1]);
 		for(int i = 1; i != vals.length-1;i++) {
-			average = variance+getInclination(vals[i], vals[i+1]);
-			average /= 2;
-			variance = average;
+			sum += getInclination(vals[i], vals[i+1]);
 		}
-		return variance;
+		return sum/vals.length;
 		}else {
 			return 0;
 		}
