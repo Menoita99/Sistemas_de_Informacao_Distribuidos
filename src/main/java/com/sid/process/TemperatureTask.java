@@ -49,7 +49,7 @@ public class TemperatureTask extends Task {
 		
 		System.out.println(process.getTempStatus()+"  :  "+variance);
 		if(Math.abs(variance) > 5) {
-			
+			System.out.println("im traped :" + variance);
 		}else {
 			try {
 				switch (process.getTempStatus()) 
@@ -106,11 +106,14 @@ public class TemperatureTask extends Task {
 						}
 					}
 					default:
+						
 						throw new IllegalArgumentException("Unexpected value: " + process.getTempStatus());
+						
 				}
 			} catch (IllegalArgumentException e) {
 				// TODO: handle exception
 				System.out.println(e);
+				process.setTempStatus(0);
 			}
 		}
 		
