@@ -30,12 +30,21 @@ public class MySqlConnector {
 	private ArrayList<Round> round_list = new ArrayList<>();
 
 	private Connection connection;
+	private boolean connected;
+	private boolean emailSent = false;
 
 
 
 
 
 	public MySqlConnector() {
+		connect();
+	}
+
+
+
+
+	public void connect() {
 		String dbUrl = "";
 		String user = "";
 		String password = "";
@@ -53,17 +62,16 @@ public class MySqlConnector {
 				try { Thread.sleep(30000); } catch (InterruptedException e) { e.printStackTrace();}
 			}).start();
 
+			connected = true;
+			emailSent = false;
 		} catch (IOException | ClassNotFoundException | SQLException e) {
 			System.err.println("User : -> " + user + "\nDBUrl : -> " + dbUrl + "\nPassword : -> " + password);
 			e.printStackTrace();
 		}
 	}
 
-
-
-
-
-
+	
+	
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -107,13 +115,13 @@ public class MySqlConnector {
 			output.add(rs.getDouble("margem_luminosidade"));
 		} catch (SQLException e) {
 			System.err.println("Something happened while fecthing Sistema values\nVerify if Sistema has values");
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return output;
@@ -169,6 +177,7 @@ public class MySqlConnector {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return false;
@@ -222,13 +231,13 @@ public class MySqlConnector {
 			duplicates[3] = lum.next();
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return duplicates;
@@ -254,13 +263,13 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		if (round_list.isEmpty())
@@ -316,13 +325,13 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 
@@ -346,13 +355,13 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return a;
@@ -410,13 +419,13 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return a;
@@ -429,11 +438,13 @@ public class MySqlConnector {
 
 	public void insertAlarm(Alarm a) {
 		Statement stm = null;
+
 		if (a != null) {
 			try {
 				MongoConnector.getInstance().insertAlarm(a);
 				stm = connection.createStatement();
-				//TODO verify is there is duplicados
+
+				if(!find_alarm(a)) {
 				String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
 						+ "VALUES ( '" + a.getDataHoraMedicao() + "', '" + a.getTipoSensor() + "', '"
 						+ a.getValorMedicao() + "', '" + a.getLimite() + "', '" + a.getDescricao() + "','"
@@ -441,17 +452,40 @@ public class MySqlConnector {
 				stm.executeUpdate(command);
 				MongoConnector.getInstance().deleteAlarm(a);
 			} catch (SQLException e) {
-				connectionErrorEmail();
 				e.printStackTrace();
 			} finally {
 				try {
 					stm.close();
 				} catch (SQLException e) {
 					e.printStackTrace();
+					handleConnectionError();
 				}
 			}
 		}
 
+	}
+
+	private boolean find_alarm(Alarm a) {
+		Statement exist_alert_stm = null;
+		try {
+			String command = "SELECT * FROM sid_2.alerta where DataHoraMedicao = '"+a.getDataHoraMedicao()+"' and TipoSensor = '"+a.getTipoSensor()+"' and ValorMedicao = "+a.getValorMedicao()+" and Limite = "+a.getLimite()+" and Descricao = '"+a.getDescricao()+"' and Controlo = '"+a.getControlo()+"' and Extra ='"+a.getExtra()+"'";
+
+			exist_alert_stm = connection.createStatement();
+			ResultSet tp = exist_alert_stm.executeQuery(command);
+			while(tp.next()) {
+				return true;
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				exist_alert_stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 
 
@@ -475,13 +509,13 @@ public class MySqlConnector {
 			read_round(ronda_planeada_extra);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		if(!round_list.isEmpty())
@@ -522,23 +556,33 @@ public class MySqlConnector {
 			stm.executeUpdate(command);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 
 	}
 
 
+	public void handleConnectionError() {
+		connected = false;
+		connect();
+		connectionErrorEmail();		
+	}
+	
+	
 	public void connectionErrorEmail() {
-		String subject = "URGENT - Connection to DB unreachable";
-		String text = "Java mongoTOmysql was not able to reach Mysql DB\nContact engineers!";
-		EmailSender.sendEmail(subject, text);
+		if (!connected && !emailSent) {
+			String subject = "URGENT - Connection to DB unreachable";
+			String text = "Java mongoTOmysql was not able to reach Mysql DB\nContact engineers!";
+			EmailSender.sendEmail(subject, text);
+			emailSent = true;
+		}
 	}
 
 
