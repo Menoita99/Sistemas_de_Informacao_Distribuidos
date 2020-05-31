@@ -17,7 +17,6 @@ import com.sid.util.ThreadPool;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import lombok.Data;
 
 @Data
