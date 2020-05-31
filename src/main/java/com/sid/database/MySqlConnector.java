@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -21,7 +22,6 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.Round;
-import com.sid.process.Processor;
 import com.sid.util.EmailSender;
 
 public class MySqlConnector {
@@ -154,13 +154,14 @@ public class MySqlConnector {
 				modified = true;
 			}
 
+			System.out.println(query);
+			System.out.println(Arrays.toString(duplicatesCheck));
 			if (modified)
 				stm.executeUpdate(query);
 
 			MongoConnector.getInstance().deleteEntryWithObjectId(m.getObjectId());
 		} catch (SQLException e) {
-			System.out.println(
-					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			System.err.println( "[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
 			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
@@ -181,7 +182,7 @@ public class MySqlConnector {
 	private void checkForUnsavedObjects() {
 		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
 		for (Measure measure : unsavedMeasures) {
-			Processor.getInstance().addAndTreatMeasure(measure);
+			//			Processor.getInstance().addAndTreatMeasure(measure);
 			saveMeasure(measure);
 		}
 
@@ -214,6 +215,9 @@ public class MySqlConnector {
 			duplicates[2] = mov.next();
 
 			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
+			+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
+			
+			System.out.println("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
 			+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 
@@ -427,13 +431,15 @@ public class MySqlConnector {
 		Statement stm = null;
 		if (a != null) {
 			try {
+				MongoConnector.getInstance().insertAlarm(a);
 				stm = connection.createStatement();
+				//TODO verify is there is duplicados
 				String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
 						+ "VALUES ( '" + a.getDataHoraMedicao() + "', '" + a.getTipoSensor() + "', '"
 						+ a.getValorMedicao() + "', '" + a.getLimite() + "', '" + a.getDescricao() + "','"
 						+ a.getControlo() + "' , '" + a.getExtra() + "');";
-				int tp = stm.executeUpdate(command);
-				System.out.println(tp);
+				stm.executeUpdate(command);
+				MongoConnector.getInstance().deleteAlarm(a);
 			} catch (SQLException e) {
 				connectionErrorEmail();
 				e.printStackTrace();
@@ -538,22 +544,6 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		//		int year = 2019;
-		//		int month = 12;
-		//		int dayOfMonth = 31;
-		//		int hour = 02;
-		//
-		//		int minute = 00;
-		//		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
-		//		Alarm aa = new Alarm(40.2, "hum", LocalDateTime.now(), 40.2, "2", "1", true);
-		//		getInstance().insertAlarm(aa);
-		//		System.out.println("s");
-		System.out.println(getInstance().findRondaByDate(LocalDateTime.now()));
-		//	 System.out.println(getInstance().findAllRondasBiggerThen(LocalDateTime.now()));
-		//
-		// System.out.println(getInstance().findLastDangerAlarm());
-		//System.out.println(getInstance().findLastSevereAlarm());
-		//	System.out.println(getInstance().findNextOrCurrentRound( LocalDateTime.parse( "2020-05-31 03:30:00",DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") ) ));
-
+		getInstance();
 	}
 }

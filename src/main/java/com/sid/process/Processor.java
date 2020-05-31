@@ -3,7 +3,6 @@ package com.sid.process;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 import org.json.JSONObject;
 
@@ -21,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class Processor {
-	
+
 	private static final String EMAIL_SUBJECT = "URGENTE MAL FUNCIONAMENTO SENSOR ";
 	private static final String EMAIL_FIELD = "Urgente! Est�o a ser enviadas mensagens inv�lidas atrav�s do sensor de ";
 
@@ -31,7 +30,7 @@ public class Processor {
 	private static final int NUMBER_WRONG__TO_EMAIL = 20;
 	private static final int NUMBER_RIGHT__TO_RESET = 5;
 	private static final int NUMBER_RESET_COOLDOWN = 21600;
-	
+
 	private final int TEMP_COOLDOWN_VALUE = 900;
 	private final int HUM_COOLDOWN_VALUE = 900;
 
@@ -87,15 +86,15 @@ public class Processor {
 
 
 	private Round nextRounivate;
-	
+
 	private boolean TempOverLim;
 	private boolean HumOverLim;
 	private int TempCooldown;
 	private int HumCooldown;
 	private int TempStatus;
 	private int HumStatus;
-	
-    private long debbugTime;
+
+	private long debbugTime;
 
 
 
@@ -105,8 +104,6 @@ public class Processor {
 		mysqlConnector = MySqlConnector.getInstance();
 		mongoConnector = MongoConnector.getInstance();
 		mysqlSystem = MysqlSystem.getInstance();
-
-		//time_to_worry = MovementTask.getTimeToWorryMov();
 
 		tempWorkers = new ThreadPool(1);
 		humWorkers = new ThreadPool(1);
@@ -118,12 +115,11 @@ public class Processor {
 		HumCooldown = 0;
 		TempStatus = 0;
 		HumStatus = 0;
-		
+
 		temp_sent_email = false;
 		hum_sent_email = false;
 		mov_sent_email = false;
 		lum_sent_email = false;
-
 	}
 
 
@@ -136,15 +132,13 @@ public class Processor {
 	public void Process() {
 		while(true) {
 			JSONObject jobj = mongoConnector.read();
-			
+
 			try {
-				
 				Measure measure = new Measure(jobj);
 				debbugTime = System.currentTimeMillis();
-				System.out.println("recebi " + measure+  " at " + debbugTime);
 				addAndTreatMeasure(measure);
 				MySqlConnector.getInstance().saveMeasure(measure);
-				 
+
 			} catch (Exception e) {
 				System.err.println("[Warning] Could not read -> "+jobj);
 				e.printStackTrace();
@@ -173,7 +167,7 @@ public class Processor {
 		}
 		addTempMeasure(newMeasure);
 		addHumMeasure(newMeasure);
-//		addMovMeasure(newMeasure);
+		addMovMeasure(newMeasure);
 		addLumMeasure(newMeasure);
 	}
 
@@ -203,20 +197,16 @@ public class Processor {
 			}
 
 
-			}else{
-				wrongMeasuresTemp++;
-				rightMeasuresTemp = 0;
-				if (wrongMeasuresTemp >= NUMBER_WRONG__TO_EMAIL && !temp_sent_email ) {
-					EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Temperatura");
-					wrongMeasuresTemp = 0;
-					temp_sent_email=true;
-					temp_send_email_cooldown = NUMBER_RESET_COOLDOWN;
-					
-				}
-					
-			
-			
+		}else{
+			wrongMeasuresTemp++;
+			rightMeasuresTemp = 0;
+			if (wrongMeasuresTemp >= NUMBER_WRONG__TO_EMAIL && !temp_sent_email ) {
+				EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Temperatura");
+				wrongMeasuresTemp = 0;
+				temp_sent_email=true;
+				temp_send_email_cooldown = NUMBER_RESET_COOLDOWN;
 
+			}
 		}
 	}
 
@@ -291,11 +281,11 @@ public class Processor {
 			}
 		}
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	private void addLumMeasure(Measure newMeasure) {
 		if(lum_sent_email) {
 			lum_send_email_cooldown--;
@@ -329,15 +319,15 @@ public class Processor {
 	}
 
 
-	
+
 
 
 
 	public void close() {
 		System.exit(0);
 	}
-	
-	
+
+
 
 
 
@@ -358,78 +348,78 @@ public class Processor {
 		return nextOrCurrentRound;
 
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	public boolean isTimeTocheckRounds() {
 		LocalDateTime limit= lastTimeChecked.plusMinutes(MINUTES_TO_RECHECK_ROUNDS);
 		LocalDateTime now = LocalDateTime.now();
 		return now.isAfter( limit ) || now.isEqual(limit) ;
 	}
 
-	
-	
-	
-	
+
+
+
+
 	public void setLastTimeChecked() {
 		lastTimeChecked = LocalDateTime.now();
 	}
 
-	
-	
-	
-	
-	
+
+
+
+
+
 	protected double getTempLimit() {
 		return mysqlSystem.getLimiteTemperatura();
 
 	}
 
-	
-	
-	
-	
-	
+
+
+
+
+
 	public void resetCooldown() {
 		cooldown = 0;
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	public void activateCooldown() {
 		cooldown = MovementTask.getCooldown();
 	}
 
-	
-	
-	
-	
-	
+
+
+
+
+
 	public void decreaseCooldown() {
 		if(cooldown-1>= 0)
 			cooldown--;
 	}
 
-	
-	
-	
-	
-	
+
+
+
+
+
 	public void  increment_counter_to_worry() {
 		counter_to_worry ++;
 	}
 
-	
-	
-	
-	
-	
+
+
+
+
+
 	public void  reset_counter_to_worry() {
 		counter_to_worry = 0;
 	}

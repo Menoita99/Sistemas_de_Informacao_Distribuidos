@@ -55,7 +55,7 @@ public class TemperatureTask extends Task {
 
 			switch (process.getTempStatus()) {
 			case 0: {
-				 System.out.println("im in 0");
+//				 System.out.println("im in 0");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -72,7 +72,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case 1: {
-				 System.out.println("im in 1");
+//				 System.out.println("im in 1");
 				if (variance > -0.2 && variance < 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -89,7 +89,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case -1: {
-				 System.out.println("im in -1");
+//				 System.out.println("im in -1");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -113,7 +113,6 @@ public class TemperatureTask extends Task {
 			}
 		}
 
-// System.out.println("BBBBBBBBBB");
 		if (process.getTempCooldown() <= 0 && !process.isTempOverLim()) {
 //			System.out.println(limTemp - averageTemp + "||" + margin);
 			if ((limTemp - averageTemp) < margin) {
