@@ -30,12 +30,21 @@ public class MySqlConnector {
 	private ArrayList<Round> round_list = new ArrayList<>();
 
 	private Connection connection;
+	private boolean connected;
+	private boolean emailSent = false;
 
 
 
 
 
 	public MySqlConnector() {
+		connect();
+	}
+
+
+
+
+	public void connect() {
 		String dbUrl = "";
 		String user = "";
 		String password = "";
@@ -53,17 +62,16 @@ public class MySqlConnector {
 				try { Thread.sleep(30000); } catch (InterruptedException e) { e.printStackTrace();}
 			}).start();
 
+			connected = true;
+			emailSent = false;
 		} catch (IOException | ClassNotFoundException | SQLException e) {
 			System.err.println("User : -> " + user + "\nDBUrl : -> " + dbUrl + "\nPassword : -> " + password);
 			e.printStackTrace();
 		}
 	}
 
-
-
-
-
-
+	
+	
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -107,13 +115,13 @@ public class MySqlConnector {
 			output.add(rs.getDouble("margem_luminosidade"));
 		} catch (SQLException e) {
 			System.err.println("Something happened while fecthing Sistema values\nVerify if Sistema has values");
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return output;
@@ -161,13 +169,13 @@ public class MySqlConnector {
 		} catch (SQLException e) {
 			System.out.println(
 					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return false;
@@ -218,13 +226,13 @@ public class MySqlConnector {
 			duplicates[3] = lum.next();
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return duplicates;
@@ -250,13 +258,13 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		if (round_list.isEmpty())
@@ -312,13 +320,13 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 
@@ -342,13 +350,13 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return a;
@@ -406,13 +414,13 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		return a;
@@ -435,13 +443,13 @@ public class MySqlConnector {
 				int tp = stm.executeUpdate(command);
 				System.out.println(tp);
 			} catch (SQLException e) {
-				connectionErrorEmail();
 				e.printStackTrace();
 			} finally {
 				try {
 					stm.close();
 				} catch (SQLException e) {
 					e.printStackTrace();
+					handleConnectionError();
 				}
 			}
 		}
@@ -469,13 +477,13 @@ public class MySqlConnector {
 			read_round(ronda_planeada_extra);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 		if(!round_list.isEmpty())
@@ -516,23 +524,33 @@ public class MySqlConnector {
 			stm.executeUpdate(command);
 
 		} catch (SQLException e) {
-			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
 				stm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				handleConnectionError();
 			}
 		}
 
 	}
 
 
+	public void handleConnectionError() {
+		connected = false;
+		connect();
+		connectionErrorEmail();		
+	}
+	
+	
 	public void connectionErrorEmail() {
-		String subject = "URGENT - Connection to DB unreachable";
-		String text = "Java mongoTOmysql was not able to reach Mysql DB\nContact engineers!";
-		EmailSender.sendEmail(subject, text);
+		if (!connected && !emailSent) {
+			String subject = "URGENT - Connection to DB unreachable";
+			String text = "Java mongoTOmysql was not able to reach Mysql DB\nContact engineers!";
+			EmailSender.sendEmail(subject, text);
+			emailSent = true;
+		}
 	}
 
 
