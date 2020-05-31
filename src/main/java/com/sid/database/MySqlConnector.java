@@ -21,6 +21,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.Round;
+import com.sid.process.Processor;
 import com.sid.util.EmailSender;
 
 public class MySqlConnector {
@@ -30,7 +31,6 @@ public class MySqlConnector {
 
 	private Connection connection;
 
-	
 	
 	
 	
@@ -49,14 +49,8 @@ public class MySqlConnector {
 			connection = DriverManager.getConnection(dbUrl, user, password);
 
 			new Thread(() -> {
-				// TODO Process this measures if not processed (Maybe add a field processed in
-				// mongoDB collection document)
-				checkForUnsavedMeasures();
-				try {
-					Thread.sleep(30000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				checkForUnsavedObjects();
+				try { Thread.sleep(30000); } catch (InterruptedException e) { e.printStackTrace();}
 			}).start();
 
 		} catch (IOException | ClassNotFoundException | SQLException e) {
@@ -184,10 +178,16 @@ public class MySqlConnector {
 	
 	
 	
-	private void checkForUnsavedMeasures() {
+	private void checkForUnsavedObjects() {
 		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
-		for (Measure measure : unsavedMeasures)
+		for (Measure measure : unsavedMeasures) {
+			Processor.getInstance().addAndTreatMeasure(measure);
 			saveMeasure(measure);
+		}
+		
+		List<Alarm> unsavedAlarms = MongoConnector.getInstance().findAllAlarms();
+		for (Alarm alarm : unsavedAlarms)
+			insertAlarm(alarm);
 	}
 
 	

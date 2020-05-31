@@ -12,10 +12,17 @@ import com.sid.models.TemperatureAlarm;
 
 public class TemperatureTask extends Task {
 
+	
+	
 	public TemperatureTask(ArrayList<Measure> measuresCopy) {
 		super(measuresCopy);
 		// TODO Auto-generated constructor stub
 	}
+
+	
+	
+	
+	
 	
 	@Override
 	public void run() {
@@ -23,6 +30,11 @@ public class TemperatureTask extends Task {
 		super.run();
 	}
 
+	
+	
+	
+	
+	
 	private Alarm verificarTemperatura() {
 		String descricao = "";
 		Boolean alarming = false;
@@ -30,7 +42,7 @@ public class TemperatureTask extends Task {
 		double limTemp = process.getMysqlSystem().getLimiteTemperatura();
 		double[] tempVals = measures.stream().mapToDouble(measure->measure.getValorTmpMedicao()).toArray();
 		double variance = varianceCheck(tempVals);
-		
+
 		if(process.isTempOverLim()) {
 			if(this.measure.getValorTmpMedicao() < limTemp && (averageValue(tempVals) - limTemp) < -4) {
 				descricao += "Temperatura desceu abaixo do limite";
@@ -46,7 +58,7 @@ public class TemperatureTask extends Task {
 				alarming = true;
 			}
 		}
-		
+
 		System.out.println(process.getTempStatus()+"  :  "+variance);
 		if(Math.abs(variance) > 5) {
 			System.out.println("im traped :" + variance);
@@ -54,61 +66,61 @@ public class TemperatureTask extends Task {
 			try {
 				switch (process.getTempStatus()) 
 				{
-					case 0: 
+				case 0: 
+				{
+					if(variance >0.2) 
 					{
-						if(variance >0.2) 
-						{
-							if(alarming) descricao += " e ";
-							descricao += "Temperatura a subir";
-							process.setTempStatus(1);
-							alarming = true;
-						}
-						else if(variance < -0.2) 
-						{
-							if(alarming) descricao += " e ";
-							descricao += "Temperatura a descer";
-							process.setTempStatus(-1);
-							alarming = true;
-						}
+						if(alarming) descricao += " e ";
+						descricao += "Temperatura a subir";
+						process.setTempStatus(1);
+						alarming = true;
 					}
-					case 1: 
+					else if(variance < -0.2) 
 					{
-						if(variance >-0.2 && variance <0.2) 
-						{
-							if(alarming) descricao += " e ";
-							descricao += "Temperatura estabilizou";
-							process.setTempStatus(0);
-							alarming = true;
-						}
-						else if(variance < -0.2) 
-						{
-							if(alarming) descricao += " e ";
-							descricao += "Temperatura a descer";
-							process.setTempStatus(-1);
-							alarming = true;
-						}
+						if(alarming) descricao += " e ";
+						descricao += "Temperatura a descer";
+						process.setTempStatus(-1);
+						alarming = true;
 					}
-					case -1: 
+				}
+				case 1: 
+				{
+					if(variance >-0.2 && variance <0.2) 
 					{
-						if(variance >0.2) 
-						{
-							if(alarming) descricao += " e ";
-							descricao += "Temperatura a subir";
-							process.setTempStatus(1);
-							alarming = true;
-						}
-						else if(variance< 0.2 && variance>-0.2) 
-						{
-							if(alarming) descricao += " e ";
-							descricao += "Temperatura estabilizou";
-							process.setTempStatus(0);
-							alarming = true;
-						}
+						if(alarming) descricao += " e ";
+						descricao += "Temperatura estabilizou";
+						process.setTempStatus(0);
+						alarming = true;
 					}
-					default:
-						
-						throw new IllegalArgumentException("Unexpected value: " + process.getTempStatus());
-						
+					else if(variance < -0.2) 
+					{
+						if(alarming) descricao += " e ";
+						descricao += "Temperatura a descer";
+						process.setTempStatus(-1);
+						alarming = true;
+					}
+				}
+				case -1: 
+				{
+					if(variance >0.2) 
+					{
+						if(alarming) descricao += " e ";
+						descricao += "Temperatura a subir";
+						process.setTempStatus(1);
+						alarming = true;
+					}
+					else if(variance< 0.2 && variance>-0.2) 
+					{
+						if(alarming) descricao += " e ";
+						descricao += "Temperatura estabilizou";
+						process.setTempStatus(0);
+						alarming = true;
+					}
+				}
+				default:
+
+					throw new IllegalArgumentException("Unexpected value: " + process.getTempStatus());
+
 				}
 			} catch (IllegalArgumentException e) {
 				// TODO: handle exception
@@ -116,13 +128,12 @@ public class TemperatureTask extends Task {
 				process.setTempStatus(0);
 			}
 		}
-		
-		
+
+
 		if (alarming) {
 			return new TemperatureAlarm(measure, descricao, "", controlo);
 		}else {
 			return null;
 		}
-		
 	}
 }

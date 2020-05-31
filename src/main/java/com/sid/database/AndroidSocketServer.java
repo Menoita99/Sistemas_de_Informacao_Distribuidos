@@ -44,7 +44,6 @@ public class AndroidSocketServer {
 			ObjectInputStream input = new ObjectInputStream(android.getInputStream());
 			ObjectOutputStream output = new ObjectOutputStream(android.getOutputStream());
 
-			//RECEBES
 			//{"limiteLuminosidade":20,"margemLuminosidade":20,"limiteHumidade":30,"margemTemperatura":0,"limiteTemperatura":50,"margemHumidade":0}
 			String inputSys = (String) input.readObject(); 
 
@@ -73,5 +72,4 @@ public class AndroidSocketServer {
 			INSTANCE = new AndroidSocketServer();
 		return INSTANCE;
 	}
-
 }
