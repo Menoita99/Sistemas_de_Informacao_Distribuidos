@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
+import com.sid.models.MovementAlarm;
 import com.sid.models.Round;
 
 public class MovementTask extends Task {
@@ -66,8 +67,7 @@ public class MovementTask extends Task {
 
 		//send alarm
 		if (alarming) {
-			System.out.println("Alarme " +  new Alarm(measure, descricao, "Mov",  controlo, "palha"));
-			return new Alarm(measure, descricao, "Mov",  controlo, "palha");
+			return new MovementAlarm(measure, descricao);
 		}else {
 			return null;
 		}
@@ -132,8 +132,8 @@ public class MovementTask extends Task {
 		//se nao houver movimento por mais de TIME_TO_WORRY  minutos
 		else if(measures.get(first).getValorMovMedicao() == 0.0 && process.getCounter_to_worry()>= TIME_TO_WORRY_MOV ) {
 			System.out.println("ALERTA TIME TO WORRY");
-			descricao += "Alerta ausência de movimento por mais de " + getTimeToWorryMov();
-			controlo = true;
+			double a = (TIME_TO_WORRY_MOV*2)/60;
+			descricao += "Alerta ausência de movimento por mais de " + a + " minutos";
 			alarming = true;
 			process.reset_counter_to_worry();
 			System.out.println("Reset Counter " + process.getCounter_to_worry());
@@ -170,7 +170,6 @@ public class MovementTask extends Task {
 				if(send_alert) {
 					System.out.println("ALERTA SOMEONE'S MOVING");
 					descricao += "Alerta detetado movimento, intruso";
-					controlo = true;
 					alarming = true;
 					process.activateCooldown();
 					System.out.println("Set Counter to cooldown " + process.getCooldown());
