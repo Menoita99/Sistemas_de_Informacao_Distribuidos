@@ -410,6 +410,34 @@ public class MySqlConnector {
 
   		}
  	}
+ 
+  	
+  	//update tabela sistema
+  	public void updateSistema(double limlum, double marlum, double limhum, double marhum, double limtmp, double martmp) {
+		Statement stm = null;
+		try {
+			stm = connection.createStatement();
+			String command = "update sistema "
+					+ "set limiteLuminosidade = " + limlum 
+					+ ", margem_Luminosidade = " + marlum
+					+ ", limiteHumidade = " + limhum
+					+ ", margem_Humidade = " + marhum
+					+ ", limiteTemperatura = " + limtmp
+					+ ", margem_Temperatura = " + martmp;
+
+			stm.executeQuery(command);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
 
  
 
