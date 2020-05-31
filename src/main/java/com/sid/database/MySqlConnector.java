@@ -21,6 +21,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.Round;
+import com.sid.util.EmailSender;
 
 public class MySqlConnector {
 
@@ -92,6 +93,7 @@ public class MySqlConnector {
 			output.add(rs.getDouble("margem_luminosidade"));
 		} catch (SQLException e) {
 			System.err.println("Something happened while fecthing Sistema values\nVerify if Sistema has values");
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -141,6 +143,7 @@ public class MySqlConnector {
 		} catch (SQLException e) {
 			System.out.println(
 					"[SEVERE] An error ocurred while saving Measure please make sure the JDBC connection is open and running");
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -184,6 +187,7 @@ public class MySqlConnector {
 							+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -210,6 +214,7 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -255,6 +260,7 @@ public class MySqlConnector {
 			reading_rounds_table(ronda_planeada_extra);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -279,6 +285,7 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -327,6 +334,7 @@ public class MySqlConnector {
 			a = reading_alert_table(tp);
 
 		} catch (SQLException e) {
+			connectionErrorEmail();
 			e.printStackTrace();
 		} finally {
 			try {
@@ -350,6 +358,7 @@ public class MySqlConnector {
 				int tp = stm.executeUpdate(command);
 				System.out.println(tp);
 			} catch (SQLException e) {
+				connectionErrorEmail();
 				e.printStackTrace();
 			} finally {
 				try {
@@ -361,6 +370,42 @@ public class MySqlConnector {
 		}
 
 	}
+//	public Round findNextOrCurrentRound(LocalDateTime date) {
+// 		round_list.clear();
+// 		Statement stm = null;
+// 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+// 		String data = date.format(formatter);
+// 		try {
+// 			// vai buscar a tabela da ronda planeada e extra
+// 			stm = connection.createStatement();
+// 			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_inicio=\"" + data + "\" || "
+// 					+ "ronda_inicio >\"" + data + "\" || "
+// 					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
+// 							+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) "
+// 				             + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\" || "
+// 				             + "ronda_inicio >\"" + data + "\" || "
+// 				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
+// 									+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) )"
+// 									+ ")" ;
+//
+//  			ResultSet ronda_planeada_extra = stm.executeQuery(command);
+// 			read_round(ronda_planeada_extra);
+//
+//  		} catch (SQLException e) {
+// 			e.printStackTrace();
+// 		} finally {
+// 			try {
+// 				stm.close();
+// 			} catch (SQLException e) {
+// 				e.printStackTrace();
+// 			}
+// 		}
+// 			if(!round_list.isEmpty())
+// 				return round_list.get(0);
+// 			else
+// 				return null;
+// 	}
+
 	public Round findNextOrCurrentRound(LocalDateTime date) {
  		round_list.clear();
  		Statement stm = null;
@@ -369,20 +414,15 @@ public class MySqlConnector {
  		try {
  			// vai buscar a tabela da ronda planeada e extra
  			stm = connection.createStatement();
- 			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_inicio=\"" + data + "\" || "
- 					+ "ronda_inicio >\"" + data + "\" || "
- 					+ "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
- 							+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) "
- 				             + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_inicio=\"" + data + "\" || "
- 				             + "ronda_inicio >\"" + data + "\" || "
- 				             + "( ( ronda_inicio=\"" + data + "\" || ronda_inicio >\"" + data + "\") "
- 									+ "&& (ronda_fim >\"" + data + "\" ||  ronda_fim=\"" + data + "\") ) )"
- 									+ ")" ;
+ 			String command = "(SELECT * FROM sid_2.ronda_extra where ronda_fim=\"" + data + "\"  || ronda_fim>\"" + data + "\" ) "
+ 				    + "Union "+ "(SELECT * FROM sid_2.ronda_planeada  where ronda_fim=\"" + data + "\"  || ronda_fim>\"" + data + "\" ) ORDER BY ronda_inicio";
+ 					
 
   			ResultSet ronda_planeada_extra = stm.executeQuery(command);
  			read_round(ronda_planeada_extra);
 
   		} catch (SQLException e) {
+  			connectionErrorEmail();
  			e.printStackTrace();
  		} finally {
  			try {
@@ -410,25 +450,62 @@ public class MySqlConnector {
 
   		}
  	}
+ 
+  	
+  	//update tabela sistema
+  	public void updateSistema(double limlum, double marlum, double limhum, double marhum, double limtmp, double martmp) {
+		Statement stm = null;
+		try {
+			stm = connection.createStatement();
+			String command = "update sistema "
+					+ "set limiteLuminosidade = " + limlum 
+					+ ", margem_Luminosidade = " + marlum
+					+ ", limiteHumidade = " + limhum
+					+ ", margem_Humidade = " + marhum
+					+ ", limiteTemperatura = " + limtmp
+					+ ", margem_Temperatura = " + martmp;
+
+			stm.executeQuery(command);
+
+		} catch (SQLException e) {
+			connectionErrorEmail();
+			e.printStackTrace();
+		} finally {
+			try {
+				stm.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+  	
+  	
+  	public void connectionErrorEmail() {
+  		String subject = "URGENT - Connection to DB unreachable";
+  		String text = "Java mongoTOmysql was not able to reach Mysql DB\nContact engineers!";
+  		EmailSender.sendEmail(subject, text);
+  	}
 
  
 
 	public static void main(String[] args) {
-		int year = 2019;
-		int month = 12;
-		int dayOfMonth = 31;
-		int hour = 02;
-
-		int minute = 00;
-		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
-		Alarm aa = new Alarm(40.2, "hum", LocalDateTime.now(), 40.2, "2", "1", true);
-		getInstance().insertAlarm(aa);
-		System.out.println("s");
+//		int year = 2019;
+//		int month = 12;
+//		int dayOfMonth = 31;
+//		int hour = 02;
+//
+//		int minute = 00;
+//		LocalDateTime date = LocalDateTime.of(year, month, dayOfMonth, hour, minute);
+//		Alarm aa = new Alarm(40.2, "hum", LocalDateTime.now(), 40.2, "2", "1", true);
+//		getInstance().insertAlarm(aa);
+//		System.out.println("s");
 		// System.out.println(getInstance().findRondaByDate(date));
 		// System.out.println(getInstance().findAllRondasBiggerThen(date));
 		//
 		// System.out.println(getInstance().findLastDangerAlarm());
 		// System.out.println(getInstance().findLastSevereAlarm());
+		System.out.println(getInstance().findNextOrCurrentRound( LocalDateTime.parse( "2020-05-31 03:30:00",DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") ) ));
 
 	}
 }

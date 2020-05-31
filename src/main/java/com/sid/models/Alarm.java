@@ -49,6 +49,14 @@ public class Alarm {
 		tipoSensor = measure.getTipoSensor();
 		dataHoraMedicao = measure.getDataHoraMedicao();
 	}
+	public Alarm(Measure measure, String descricao, String tipoSensor,  boolean controlo, String palha) { //correct this
+		//this.limite = MysqlSystem.getLimit(Sensor type);
+		this.controlo = controlo;
+		this.descricao = descricao;
+		//		valorMedicao = measure.getValorMedicao();
+		this.tipoSensor = tipoSensor;
+		dataHoraMedicao = measure.getDataHoraMedicao();
+	}
 
 	public Alarm(Measure measure, String descricao ) {
 		//this.limite = MysqlSystem.getLimit(Sensor type);

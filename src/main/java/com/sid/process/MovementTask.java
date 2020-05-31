@@ -3,103 +3,77 @@ package com.sid.process;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import com.sid.models.Alarm;
 import com.sid.models.Measure;
 import com.sid.models.Round;
+import com.sid.models.TemperatureAlarm;
 
 public class MovementTask extends Task {
 		private static final int TIME_TO_WORRY_MOV = 10;
+		private static final int COOLDOWN = 10;
+
+		
 		
 
-		private ArrayList<Measure> measures;
+		private int first;
+		
+
 
 		private Round nextOrCurrentRound;
 		private LocalDateTime lastMovement;
-		private Processor process;
 
 	public MovementTask(ArrayList<Measure> measuresCopy) {
 		super(measuresCopy);
-		process = getProcess();
 		System.out.println("before initializing");
 		nextOrCurrentRound = process.getNextOrCurrentRound();
 		lastMovement = process.getLastMovement();
+		first =measures.size() -1;
 		System.out.println("after initializing");
-
-		measures = getMeasures();
 		}
 	@Override
 	public void run() {
-		//super.run();
-		System.out.println("Movement " + measures);
-			verifyMomentValues();
+			System.out.println("Movement " + measures);
+			alarm = verifyMovementValues();
+			super.run();
+
 		
 	}
-private void verifyMomentValues() {
+private Alarm verifyMovementValues() {
 		
-		LocalDateTime time = measures.get(0).getDataHoraMedicao();
+	
+		
+		LocalDateTime time = measures.get(first).getDataHoraMedicao();
 		
 		if( !isCurrentRound(time)) {
 			nextOrCurrentRound = process.setNextOrCurrentRound(time);
 		
 		}
 		
+		
 		//se estiver a occorer ronda
 		if(nextOrCurrentRound!= null && isCurrentRound(time) ) {
-			System.out.println("there is a round right now");
 			
-			//se houver movimento
-			if(measures.get(0).getValorMovMedicao() == 1.0) {
-				boolean moved = true;
-				for(Measure m : measures) 
-					if(m.getValorMovMedicao()== 0.0) {
-						moved=false;
-						break;
-					}
-				
-				if(moved) {
-					process.setTime_to_worry(TIME_TO_WORRY_MOV);
-					process.setLastMovement(time); //tres mensagens
-					lastMovement=process.getLastMovement();
-					System.out.println("Moved" +lastMovement);
-				}
-				
-			}
-			
-			//se nao houver movimento por mais de TIME_TO_WORRY  minutos
-			else if(measures.get(0).getValorMovMedicao() == 0.0 && time.isAfter(lastMovement.plusMinutes(TIME_TO_WORRY_MOV)) ) {
-				System.out.println("ALERTA TIME TO WORRY");
-				process.setTime_to_worry(TIME_TO_WORRY_MOV*2);
-
-			}
-			System.out.println("last movement " + lastMovement + "Time to worry " + lastMovement.plusMinutes(TIME_TO_WORRY_MOV) + "time now "+ time);
-				    	 
+			process.increment_counter_to_worry();
+			System.out.println("Inside there is a round Counter " + process.getCounter_to_worry());
+			verifyRound(time);
+			System.out.println("On current round counter: " + process.getCounter_to_worry());
+		
+			    	 
 			
 		//se não estiver a ocorrer ronda	
-		}else if (nextOrCurrentRound!= null) {
-			System.out.println("no round right now");
+		}else {
+			verifyNoRound(time);
 			
-			if(measures.get(0).getValorMovMedicao() == 1.0) {
-				boolean send_alert = true;
-				nextOrCurrentRound = process.setNextOrCurrentRound(time);
-				System.out.println(" Someone moved, getting round");
-				
-				if(!isCurrentRound(time)) {
-					for(Measure m : measures) 
-						if(m.getValorMovMedicao()== 0.0) {
-							send_alert=false;
-							break;
-						}
-					
-					if(send_alert) {
-						System.out.println("ALERTA SOMEONE'S MOVING");
-						process.setTime_to_worry(TIME_TO_WORRY_MOV*2);
-					}
-				}
-			
-			}else {
-				process.setTime_to_worry(TIME_TO_WORRY_MOV);
-				
-			}
 		}
+		
+		//send alarm
+		if (alarming) {
+			System.out.println("Alarme " +  new Alarm(measure, descricao, "Mov",  controlo, "palha"));
+			return new Alarm(measure, descricao, "Mov",  controlo, "palha");
+		}else {
+			return null;
+		}
+		
 	}
 
 	
@@ -117,8 +91,92 @@ private void verifyMomentValues() {
 		return TIME_TO_WORRY_MOV;
 	}
 	
+	public static int getCooldown() {
+		return COOLDOWN;
+	}
+	private void verifyRound(LocalDateTime time) {
+		
+		
+		System.out.println("there is a round right now");
+		 process.resetCooldown();
+		
+		//se houver movimento
+		if(measures.get(first).getValorMovMedicao() == 1.0) {
+			
+			boolean moved = true;
+			for(Measure m : measures) 
+				if(m.getValorMovMedicao()== 0.0) {
+					moved=false;
+					break;
+				}
+			
+			if(moved) {
+				//process.setTime_to_worry(TIME_TO_WORRY_MOV);
+				process.setLastMovement(time); //tres mensagens
+				lastMovement=process.getLastMovement();
+				System.out.println("Moved" +lastMovement);
+				process.reset_counter_to_worry();
+				System.out.println("Counter " + process.getCounter_to_worry());
+
+			}
+			
+		}
+		
+		//se nao houver movimento por mais de TIME_TO_WORRY  minutos
+		else if(measures.get(first).getValorMovMedicao() == 0.0 && process.getCounter_to_worry()>= TIME_TO_WORRY_MOV ) {
+			System.out.println("ALERTA TIME TO WORRY");
+			descricao += "Alerta ausência de movimento por mais de " + getTimeToWorryMov();
+			controlo = true;
+			alarming = true;
+			process.reset_counter_to_worry();
+			System.out.println("Reset Counter " + process.getCounter_to_worry());
+		}
+
+			
+			//process.setTime_to_worry(TIME_TO_WORRY_MOV*2);
+		
+		
+		
+	}
 	
-	
+	private void verifyNoRound(LocalDateTime time) {
+		process.decreaseCooldown();
+
+		
+		
+		System.out.println("no round right now cooldown "+ process.getCooldown());
+		boolean b =process.getCooldown()!=0;
+		System.out.println("Cooldown!=0 " + b );
+		//there was a movement
+		if(measures.get(first).getValorMovMedicao() == 1.0 && process.getCooldown()==0) {
+			
+			boolean send_alert = true;
+			nextOrCurrentRound = process.setNextOrCurrentRound(time); //making sure there is no round
+			System.out.println(" Someone moved, getting round");
+			System.out.println("next round "+ nextOrCurrentRound);
+			
+			if(!isCurrentRound(time)) {
+				for(Measure m : measures) 
+					if(m.getValorMovMedicao()== 0.0) {
+						send_alert=false;
+						break;
+					}
+				
+				if(send_alert) {
+					System.out.println("ALERTA SOMEONE'S MOVING");
+					descricao += "Alerta detetado movimento, intruso";
+					controlo = true;
+					alarming = true;
+					process.activateCooldown();
+					System.out.println("Set Counter to cooldown " + process.getCooldown());
+
+					//process.setTime_to_worry(TIME_TO_WORRY_MOV*2);
+				}
+			}
+			
+		}
+	}
+		
 	
 	
 }

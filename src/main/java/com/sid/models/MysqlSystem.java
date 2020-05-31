@@ -27,6 +27,11 @@ public class MysqlSystem  implements Serializable{
 	
 	
 	public MysqlSystem() {
+		setSystemValues();
+	}
+
+	
+	public void setSystemValues() {
 		List<Object> systemValues = MySqlConnector.getInstance().getSystemValues();
 		if(systemValues.isEmpty())
 			System.err.println("[Warning] Could not load system values, please check if there are values in Sistema table");
@@ -38,9 +43,8 @@ public class MysqlSystem  implements Serializable{
 			margemHumidade = (double) systemValues.get(4);
 			margemLuminosidade = (double) systemValues.get(5);
 		}
+		
 	}
-
-
 	
 	
 	
