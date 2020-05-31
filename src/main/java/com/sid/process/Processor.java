@@ -26,7 +26,7 @@ public class Processor {
 	private static final String EMAIL_FIELD = "Urgente! Estao a ser enviadas mensagens invalidas atrav�s do sensor de ";
 
 
-	private static final int NUMBER_OF_MEASURES_SAVED = 5;
+	private static final int NUMBER_OF_MEASURES_SAVED = 2;
 	private static final int NUMBER_OF_MEASURES_SAVED_MOV = 3;
 	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
 	private static final int NUMBER_WRONG__TO_EMAIL = 20;
@@ -95,7 +95,8 @@ public class Processor {
 	private int HumCooldown;
 	private int TempStatus;
 	private int HumStatus;
-	
+	private double lastTempVariationVal;
+	private double tempVariationLimit;
     private long debbugTime;
 
 
@@ -119,7 +120,8 @@ public class Processor {
 		HumCooldown = 0;
 		TempStatus = 0;
 		HumStatus = 0;
-		
+		lastTempVariationVal = 0;
+		tempVariationLimit = 0;
 		temp_sent_email = false;
 		hum_sent_email = false;
 		mov_sent_email = false;

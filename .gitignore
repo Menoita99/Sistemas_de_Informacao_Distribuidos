@@ -5,3 +5,7 @@ pom.xml
 /target/
 src/main/resources/config.ini
 target/classes/config.ini
+src/main/resources/config.ini
+target/classes/config.ini
+target/classes/META-INF/MANIFEST.MF
+target/classes/META-INF/maven/Sid/MongoToMysql/pom.properties
