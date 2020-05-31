@@ -14,6 +14,9 @@ public class Task implements Runnable {
 	protected ArrayList<Measure> measures;
 	protected Measure measure;
 	protected Processor process = Processor.getInstance();
+	protected String descricao = "";
+	protected Boolean alarming = false;
+	protected Boolean controlo = false;
 
 	public Task(ArrayList<Measure> measuresCopy) {
 		this.measures = measuresCopy;
