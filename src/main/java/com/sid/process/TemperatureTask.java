@@ -116,7 +116,6 @@ public class TemperatureTask extends Task {
 			}
 		}
 
-// System.out.println("BBBBBBBBBB");
 		if (process.getTempCooldown() <= 0 && !process.isTempOverLim()) {
 //			System.out.println(limTemp - averageTemp + "||" + margin);
 			if ((limTemp - averageTemp) < margin) {
