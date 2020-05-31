@@ -94,7 +94,8 @@ public class Processor {
 	private int HumCooldown;
 	private int TempStatus;
 	private int HumStatus;
-	
+	private double lastTempVariationVal;
+	private double tempVariationLimit;
     private long debbugTime;
 
 
@@ -118,7 +119,8 @@ public class Processor {
 		HumCooldown = 0;
 		TempStatus = 0;
 		HumStatus = 0;
-		
+		lastTempVariationVal = 0;
+		tempVariationLimit = 0;
 		temp_sent_email = false;
 		hum_sent_email = false;
 		mov_sent_email = false;

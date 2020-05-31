@@ -29,12 +29,15 @@ public class TemperatureTask extends Task {
 		double[] tempVals = measures.stream().mapToDouble(measure -> measure.getValorTmpMedicao()).toArray();
 		double variance = varianceCheck(tempVals);
 		double averageTemp = averageValue(tempVals);
-//		double varianceLimit = process.getStandardTempVariation();
+		double variationLimit = 5;
 
-		if (Math.abs(variance) > 5) {
-//			System.out.println("i'm quarentined :" + variance + " || " + 5);
+		if (Math.abs(variance) > variationLimit) {
+			//System.out.println("i'm quarentined :" + variance + " || " + variationLimit);
+			
 		} else {
-//			System.out.println("i was let tru :" + variance + " || " + 5);
+			
+			//System.out.println("i was let tru :" + variance + " || " + variationLimit);
+			
 			if (process.isTempOverLim()) {
 				if (this.measure.getValorTmpMedicao() < limTemp && (averageTemp - limTemp) < -4) {
 					descricao += "Temperatura desceu abaixo do limite";
@@ -55,7 +58,7 @@ public class TemperatureTask extends Task {
 
 			switch (process.getTempStatus()) {
 			case 0: {
-				 System.out.println("im in 0");
+				//System.out.println("im in 0");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -72,7 +75,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case 1: {
-				 System.out.println("im in 1");
+				//System.out.println("im in 1");
 				if (variance > -0.2 && variance < 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -89,7 +92,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case -1: {
-				 System.out.println("im in -1");
+				//System.out.println("im in -1");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
