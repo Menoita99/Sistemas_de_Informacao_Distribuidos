@@ -10,6 +10,7 @@ import com.sid.database.MySqlConnector;
 import com.sid.models.Measure;
 import com.sid.models.MysqlSystem;
 import com.sid.models.Round;
+import com.sid.util.EmailSender;
 import com.sid.util.ThreadPool;
 
 import javafx.collections.FXCollections;
@@ -18,6 +19,11 @@ import lombok.Data;
 
 @Data
 public class Processor {
+	
+	
+	private static final String EMAIL_SUBJECT = "URGENTE MALFUNCIONAMENTO SENSOR ";
+	private static final String EMAIL_FIELD = "Urgente! Estão a ser enviadas mensagens inválidas através do sensor de ";
+
 
 	private static final int NUMBER_OF_MEASURES_SAVED = 5;
 	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
@@ -76,8 +82,9 @@ public class Processor {
 	private LocalDateTime lastTimeChecked;
 	private LocalDateTime lastMovement;
 	private LocalDateTime badMovement;
-	private int time_to_worry;
-	private int time_to_send_email;
+	private int counter_to_worry;
+	private int cooldown;
+	
 
 	private Round nextRounivate;
 	boolean TempOverLim;
@@ -96,7 +103,7 @@ public class Processor {
 		mongoConnector = MongoConnector.getInstance();
 		mysqlSystem = MysqlSystem.getInstance();
 
-		time_to_worry = MovementTask.getTimeToWorryMov();
+		//time_to_worry = MovementTask.getTimeToWorryMov();
 
 		tempWorkers = new ThreadPool(1);
 		humWorkers = new ThreadPool(1);
@@ -199,7 +206,7 @@ public class Processor {
 				wrongMeasuresTemp++;
 				rightMeasuresTemp = 0;
 				if (wrongMeasuresTemp >= NUMBER_WRONG__TO_EMAIL && !temp_sent_email ) {
-					//TODO sendemail
+					EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Movimento");
 					wrongMeasuresTemp = 0;
 					temp_sent_email=true;
 					temp_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -242,7 +249,7 @@ public class Processor {
 				wrongMeasuresHum++;
 				rightMeasuresHum = 0;
 				if (wrongMeasuresHum >= NUMBER_WRONG__TO_EMAIL && !hum_sent_email ) {
-					//TODO sendemail
+					EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Movimento");
 					wrongMeasuresHum = 0;
 					hum_sent_email=true;
 					hum_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -283,7 +290,7 @@ public class Processor {
 			wrongMeasuresMov++;
 			rightMeasuresMov = 0;
 			if (wrongMeasuresMov >= NUMBER_WRONG__TO_EMAIL && !mov_sent_email ) {
-				//TODO sendemail
+				EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Movimento");
 				wrongMeasuresMov = 0;
 				mov_sent_email=true;
 				mov_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -323,7 +330,7 @@ public class Processor {
 				wrongMeasuresLum++;
 				rightMeasuresLum = 0;
 				if (wrongMeasuresLum >= NUMBER_WRONG__TO_EMAIL && !lum_sent_email ) {
-					//TODO sendemail
+					EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Luminosidade");
 					wrongMeasuresLum = 0;
 					lum_sent_email=true;
 					lum_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -354,7 +361,8 @@ public class Processor {
 			 nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
 			 lastTimeChecked = LocalDateTime.now();
 			 lastMovement= time;
-			 time_to_worry= MovementTask.getTimeToWorryMov();
+			// time_to_worry= MovementTask.getTimeToWorryMov();
+			 reset_counter_to_worry();
 			 System.out.println("next round: " + nextOrCurrentRound);
 			 return nextOrCurrentRound;
 			 
@@ -363,6 +371,7 @@ public class Processor {
 		
 		return nextOrCurrentRound;
 			
+		
 		
 	}
 	public boolean isTimeTocheckRounds() {
@@ -384,4 +393,26 @@ public class Processor {
 		return mysqlSystem.getLimiteTemperatura();
 
 	}
+	
+	public void resetCooldown() {
+		cooldown = 0;
+		
+	}
+	public void activateCooldown() {
+		cooldown = MovementTask.getCooldown();
+	}
+	public void decreaseCooldown() {
+		if(cooldown-1>= 0)
+			cooldown--;
+	}
+	public void  increment_counter_to_worry() {
+		counter_to_worry ++;
+		
+	}
+	public void  reset_counter_to_worry() {
+		counter_to_worry = 0;
+		
+	}
+	
+	
 }
