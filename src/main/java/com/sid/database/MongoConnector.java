@@ -181,6 +181,7 @@ public class MongoConnector {
 	 * @return
 	 */
 	private boolean formatBool(int i) {
+		System.out.println("controlo "+i);
 		return i == 0;
 	}
 
@@ -202,7 +203,8 @@ public class MongoConnector {
 		MongoCursor<Document> cursor = alarmsCollection.find(alarmDoc).cursor();
 		
 		while (cursor.hasNext()) {
-			System.out.println("Deleted alarm: " + alarmsCollection.findOneAndDelete(cursor.next()));
+			alarmsCollection.deleteOne(cursor.next());
+//			System.out.println("Deleted alarm: " + alarmsCollection.findOneAndDelete(cursor.next()));
 		}
 	}
 

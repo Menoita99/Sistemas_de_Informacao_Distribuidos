@@ -53,9 +53,10 @@ public class Measure {
 	private void setMovement(JSONObject measure) {
 		try {
 			valorMovMedicao = measure.getDouble("mov");
-			if( valorMovMedicao != 0.0 && valorMovMedicao != 1.0 )
+			if( valorMovMedicao != 0.0 && valorMovMedicao != 1.0 ) {
 				controloMov = false;
-				
+				extraMov = "Incorrect Value";
+			}
 		} catch (Exception e) {
 			controloMov = false;
 			extraMov = "Could not find value mov";
@@ -71,7 +72,6 @@ public class Measure {
 	private void setLuminosity(JSONObject measure) {
 		try {
 			valorLumMedicao = measure.getDouble("cell");
-			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloLum = false;
 			extraLum = "Could not find value cell";
@@ -86,7 +86,6 @@ public class Measure {
 	private void setHumidity(JSONObject measure) {
 		try {
 			valorHumMedicao = measure.getDouble("hum");
-			//TODO VERIFICATIONS
 		} catch (Exception e) {
 			controloHum = false;
 			extraHum = "Could not find value hum";

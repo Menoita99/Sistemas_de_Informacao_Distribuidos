@@ -13,7 +13,6 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -163,6 +162,7 @@ public class MySqlConnector {
 
 	private void checkForUnsavedObjects() {
 		List<Measure> unsavedMeasures = MongoConnector.getInstance().findAllMeasures();
+		
 		for (Measure measure : unsavedMeasures) {
 			Processor.getInstance().addAndTreatMeasure(measure);
 			saveMeasure(measure);
@@ -367,7 +367,6 @@ public class MySqlConnector {
 		if (a != null) {
 			try {
 				MongoConnector.getInstance().insertAlarm(a);
-				System.out.println("depois insert");
 				stm = connection.createStatement();
 
 				if (!find_alarm(a)) {
@@ -377,9 +376,7 @@ public class MySqlConnector {
 							+ a.getControlo() + "' , '" + a.getExtra() + "');";
 					stm.executeUpdate(command);
 				}
-				System.out.println("Antes delete");
 				MongoConnector.getInstance().deleteAlarm(a);
-				System.out.println("depiis delete");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} finally {
