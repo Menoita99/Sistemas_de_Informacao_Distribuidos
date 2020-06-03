@@ -25,7 +25,7 @@ public class Processor {
 	private static final String EMAIL_SUBJECT = "URGENTE MAL FUNCIONAMENTO SENSOR ";
 	private static final String EMAIL_FIELD = "Urgente! Estao a ser enviadas mensagens invalidas atravï¿½s do sensor de ";
 
-	private static final int NUMBER_OF_MEASURES_SAVED = 2;
+	private static final int NUMBER_OF_MEASURES_SAVED = 5;
 	private static final int NUMBER_OF_MEASURES_SAVED_MOV = 3;
 	private static final long MINUTES_TO_RECHECK_ROUNDS = 10;
 	private static final int NUMBER_WRONG__TO_EMAIL = 20;
@@ -128,6 +128,7 @@ public class Processor {
 				Measure measure = new Measure(jobj);
 				debbugTime = System.currentTimeMillis();
 				addAndTreatMeasure(measure);
+				System.out.println("Depois da addandTreat");
 				MySqlConnector.getInstance().saveMeasure(measure);
 
 			} catch (Exception e) {
@@ -144,13 +145,14 @@ public class Processor {
 	}
 
 	public void addAndTreatMeasure(Measure newMeasure) {
+		System.out.println(newMeasure);
 		measures.add(newMeasure);
 		if (measures.size() > NUMBER_OF_MEASURES_SAVED) {
 			measures.remove(0);
 		}
 		addTempMeasure(newMeasure);
-		addHumMeasure(newMeasure);
 		addMovMeasure(newMeasure);
+		addHumMeasure(newMeasure);
 		addLumMeasure(newMeasure);
 	}
 
@@ -181,7 +183,9 @@ public class Processor {
 				EmailSender.sendEmail(EMAIL_SUBJECT, EMAIL_FIELD + " Temperatura");
 				Alarm aviso_sensor = new Alarm(0, "tmp", newMeasure.getDataHoraMedicao(), 0.0,
 						"sensor temperatura pode estar estragado", "erros medição", true);
+				System.out.println("andes inswr");
 				MySqlConnector.getInstance().insertAlarm(aviso_sensor);
+				System.out.println("SSS");
 				wrongMeasuresTemp = 0;
 				temp_sent_email = true;
 				temp_send_email_cooldown = NUMBER_RESET_COOLDOWN;
@@ -304,13 +308,13 @@ public class Processor {
 	public Round setNextOrCurrentRound(LocalDateTime time) {
 		if (nextOrCurrentRound == null
 				|| (isTimeTocheckRounds() && !nextOrCurrentRound.getRound_begin().isAfter(time))) {
-			System.out.println("getting next round");
+			//System.out.println("getting next round");
 			nextOrCurrentRound = mysqlConnector.findNextOrCurrentRound(time);
 			lastTimeChecked = LocalDateTime.now();
 			lastMovement = time;
 			// time_to_worry= MovementTask.getTimeToWorryMov();
 			reset_counter_to_worry();
-			System.out.println("next round: " + nextOrCurrentRound);
+			//System.out.println("next round: " + nextOrCurrentRound);
 			return nextOrCurrentRound;
 
 		} else if (nextOrCurrentRound.getRound_begin().isAfter(time)) // in case an older message pops up

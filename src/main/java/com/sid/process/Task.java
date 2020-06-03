@@ -31,15 +31,15 @@ public class Task implements Runnable {
 	@Override
 	public void run() {
 		if(alarm != null) {
-			System.out.println(alarm);
+			//System.out.println(alarm);
 			MySqlConnector.getInstance().insertAlarm(alarm);
 			long endTime = System.currentTimeMillis();
 			long elapsed_time = endTime-debbug_time;
-			System.out.println("inseri " + alarm +" causado pela measure "+ measure +  " at " +endTime);
-			System.out.println("took : "+ elapsed_time + " miliseconds");
+			//System.out.println("inseri " + alarm +" causado pela measure "+ measure +  " at " +endTime);
+			//System.out.println("took : "+ elapsed_time + " miliseconds");
 		
 		}
-		//System.out.println(measures);
+		////System.out.println(measures);
 		
 		//TODO implement stuff here
 	}

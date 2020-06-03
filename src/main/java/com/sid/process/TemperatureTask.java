@@ -32,11 +32,11 @@ public class TemperatureTask extends Task {
 		double variationLimit = 5;
 
 		if (Math.abs(variance) > variationLimit) {
-			//System.out.println("i'm quarentined :" + variance + " || " + variationLimit);
+			////System.out.println("i'm quarentined :" + variance + " || " + variationLimit);
 			
 		} else {
 			
-			//System.out.println("i was let tru :" + variance + " || " + variationLimit);
+			////System.out.println("i was let tru :" + variance + " || " + variationLimit);
 			
 			if (process.isTempOverLim()) {
 				if (this.measure.getValorTmpMedicao() < limTemp && (averageTemp - limTemp) < -4) {
@@ -54,11 +54,11 @@ public class TemperatureTask extends Task {
 				}
 			}
 
-			// System.out.println(process.getTempStatus()+" : "+variance);
+			// //System.out.println(process.getTempStatus()+" : "+variance);
 
 			switch (process.getTempStatus()) {
 			case 0: {
-				//System.out.println("im in 0");
+				//////System.out.out.println("im in 0");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -75,7 +75,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case 1: {
-				//System.out.println("im in 1");
+				////System.out.println("im in 1");
 				if (variance > -0.2 && variance < 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -92,7 +92,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			case -1: {
-				//System.out.println("im in -1");
+				////System.out.println("im in -1");
 				if (variance > 0.2) {
 					if (alarming)
 						descricao += " e ";
@@ -109,7 +109,7 @@ public class TemperatureTask extends Task {
 				break;
 			}
 			default: {
-				System.out.println("im Out " + process.getTempStatus());
+				////System.out.println("im Out " + process.getTempStatus());
 				process.setTempStatus(0);
 				break;
 			}
@@ -117,9 +117,9 @@ public class TemperatureTask extends Task {
 		}
 
 		if (process.getTempCooldown() <= 0 && !process.isTempOverLim()) {
-//			System.out.println(limTemp - averageTemp + "||" + margin);
+//			//System.out.println(limTemp - averageTemp + "||" + margin);
 			if ((limTemp - averageTemp) < margin) {
-//				System.out.println("im getting there");
+//				//System.out.println("im getting there");
 				if (alarming)
 					descricao += " e ";
 				descricao += "Temperatura proxima do limite";

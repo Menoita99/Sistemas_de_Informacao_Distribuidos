@@ -57,11 +57,6 @@ public class MongoConnector {
 		}
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * Start the Listener Thread that will watch Mongo messages and closes Mongo
 	 * Client
@@ -79,11 +74,6 @@ public class MongoConnector {
 		}).start();
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * returns singleton instance
 	 */
@@ -93,11 +83,6 @@ public class MongoConnector {
 		return INSTANCE;
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * This method stops the thread and waits for a Mongo message
 	 * 
@@ -116,11 +101,6 @@ public class MongoConnector {
 		}
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * This method deletes a mongodb entry with the given id
 	 * 
@@ -130,11 +110,6 @@ public class MongoConnector {
 		collection.deleteOne(new Document("_id", new ObjectId(id)));
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * Notifies thread that are in waiting
 	 */
@@ -142,21 +117,17 @@ public class MongoConnector {
 		this.notify();
 	}
 
-
-
-
-
-
 	public List<Measure> findAllMeasures() {
 		List<Measure> list = new ArrayList<>();
-		MongoCursor<Measure> iterator = collection.find().map((d) -> new Measure(new JSONObject(d.toJson()))).iterator();
-		
-		while(iterator.hasNext()) 
+		MongoCursor<Measure> iterator = collection.find().map((d) -> new Measure(new JSONObject(d.toJson())))
+				.iterator();
+
+		while (iterator.hasNext())
 			list.add(iterator.next());
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * inserts an alarm into the collection backup_alarmes
 	 * 
@@ -170,27 +141,30 @@ public class MongoConnector {
 		alarmDoc.put("extra", alarm.getExtra());
 		alarmDoc.put("descricao", alarm.getDescricao());
 		alarmDoc.put("dataHoraMedicao", alarm.getDataHoraMedicao());
-		alarmDoc.put("controlo", alarm.getControlo());	
+		alarmDoc.put("controlo", alarm.getControlo());
 		alarmsCollection.insertOne(alarmDoc);
 	}
-	
-	
+
 	/**
 	 * Returns a list with all the alarms in the collection backup_alarmes
+	 * 
 	 * @return
 	 */
 	public List<Alarm> findAllAlarms() {
 		List<Alarm> alarms = new ArrayList<>();
-		MongoCursor<Alarm> iterator = alarmsCollection.find().map( (doc)
-				-> new Alarm(doc.getDouble("valorMedicao"), doc.getString("tipoSensor"), formatDate(doc.getString("dataHoraMedicao")), doc.getDouble("limite"), 
-								doc.getString("descricao"), doc.getString("extra"), formatBool(doc.getInteger("controlo")))).iterator();
-		while(iterator.hasNext())
+		MongoCursor<Alarm> iterator = alarmsCollection.find()
+				.map((doc) -> new Alarm(doc.getDouble("valorMedicao"), doc.getString("tipoSensor"),
+						formatDate(doc.getString("dataHoraMedicao")), doc.getDouble("limite"),
+						doc.getString("descricao"), doc.getString("extra"), formatBool(doc.getInteger("controlo"))))
+				.iterator();
+		while (iterator.hasNext())
 			alarms.add(iterator.next());
 		return alarms;
 	}
-	
+
 	/**
 	 * transforms a String date into a LocalDateTime
+	 * 
 	 * @param date
 	 * @return
 	 */
@@ -199,19 +173,16 @@ public class MongoConnector {
 		LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
 		return dateTime;
 	}
-	
+
 	/**
 	 * transforms a int into a boolean 0 = true, 1 = false
+	 * 
 	 * @param i
 	 * @return
 	 */
 	private boolean formatBool(int i) {
 		return i == 0;
 	}
-
-
-
-
 
 	/**
 	 * Deletes an alarm from mongo collection - backup_alarmes
@@ -220,7 +191,6 @@ public class MongoConnector {
 	 */
 	public void deleteAlarm(Alarm alarm) {
 		Document alarmDoc = new Document();
-		Document deletedDoc;
 		alarmDoc.put("valorMedicao", alarm.getValorMedicao());
 		alarmDoc.put("limite", alarm.getLimite());
 		alarmDoc.put("tipoSensor", alarm.getTipoSensor());
@@ -228,13 +198,12 @@ public class MongoConnector {
 		alarmDoc.put("descricao", alarm.getDescricao());
 		alarmDoc.put("dataHoraMedicao", alarm.getDataHoraMedicao());
 		alarmDoc.put("controlo", alarm.getControlo());
-		deletedDoc = alarmsCollection.findOneAndDelete(alarmDoc);
-		if(deletedDoc != null)
-			System.out.println("Deleted alarm: " + deletedDoc.toJson());
-		else
-			System.out.println("No alarm deleted");
+
+		MongoCursor<Document> cursor = alarmsCollection.find(alarmDoc).cursor();
+		
+		while (cursor.hasNext()) {
+			System.out.println("Deleted alarm: " + alarmsCollection.findOneAndDelete(cursor.next()));
+		}
 	}
-	
-	
-	
+
 }
