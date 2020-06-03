@@ -128,7 +128,6 @@ public class Processor {
 				Measure measure = new Measure(jobj);
 				debbugTime = System.currentTimeMillis();
 				addAndTreatMeasure(measure);
-				System.out.println("Depois da addandTreat");
 				MySqlConnector.getInstance().saveMeasure(measure);
 
 			} catch (Exception e) {
