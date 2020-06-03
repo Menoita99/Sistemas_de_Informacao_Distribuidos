@@ -70,8 +70,8 @@ public class MySqlConnector {
 		}
 	}
 
-	
-	
+
+
 	/**
 	 * Executes schema.sql present in resources folder
 	 */
@@ -225,7 +225,7 @@ public class MySqlConnector {
 
 			ResultSet lum = stm.executeQuery("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
 			+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
-			
+
 			System.out.println("Select * from medicaosensores where ValorMedicao = " + m.getValorLumMedicao()
 			+ " and TipoSensor = 'LUM' and DataHoraMedicao =  '" + dataHoraMedicao + "';");
 			duplicates[3] = lum.next();
@@ -445,11 +445,13 @@ public class MySqlConnector {
 				stm = connection.createStatement();
 
 				if(!find_alarm(a)) {
-				String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
-						+ "VALUES ( '" + a.getDataHoraMedicao() + "', '" + a.getTipoSensor() + "', '"
-						+ a.getValorMedicao() + "', '" + a.getLimite() + "', '" + a.getDescricao() + "','"
-						+ a.getControlo() + "' , '" + a.getExtra() + "');";
-				stm.executeUpdate(command);
+					String command = "INSERT INTO `sid_2`.`alerta` ( `DataHoraMedicao`, `TipoSensor`, `ValorMedicao`, `Limite`, `Descricao`, `Controlo`, `Extra`) "
+							+ "VALUES ( '" + a.getDataHoraMedicao() + "', '" + a.getTipoSensor() + "', '"
+							+ a.getValorMedicao() + "', '" + a.getLimite() + "', '" + a.getDescricao() + "','"
+							+ a.getControlo() + "' , '" + a.getExtra() + "');";
+					stm.executeUpdate(command);
+				}
+				
 				MongoConnector.getInstance().deleteAlarm(a);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -462,7 +464,6 @@ public class MySqlConnector {
 				}
 			}
 		}
-
 	}
 
 	private boolean find_alarm(Alarm a) {
@@ -574,8 +575,8 @@ public class MySqlConnector {
 		connect();
 		connectionErrorEmail();		
 	}
-	
-	
+
+
 	public void connectionErrorEmail() {
 		if (!connected && !emailSent) {
 			String subject = "URGENT - Connection to DB unreachable";
@@ -588,6 +589,6 @@ public class MySqlConnector {
 
 
 	public static void main(String[] args) {
-		getInstance();
+		getInstance().executeSchemaScript();
 	}
 }

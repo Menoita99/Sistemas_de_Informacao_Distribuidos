@@ -195,7 +195,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Medicao_de_sensor_erradas`()
+CREATE DEFINER=`php`@`localhost` PROCEDURE `Medicao_de_sensor_erradas`()
 BEGIN
 	select * from sid_2.medicaosensores where Controlo = false;
 END ;;
