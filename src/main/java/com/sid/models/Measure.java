@@ -101,7 +101,13 @@ public class Measure {
 	private void setTemperature(JSONObject measure) {
 		try {
 			valorTmpMedicao = measure.getDouble("tmp");
-			//TODO VERIFICATIONS
+			if(valorTmpMedicao <= -273.15) {
+				controloTmp = false;
+				extraTmp = "Temperatura imposivelmente baixa";
+			}else if(valorTmpMedicao > 1500.0) {
+				controloTmp = false;
+				extraTmp = "Temperatura imposivelmente alta";
+			}
 		} catch (Exception e) {
 			controloTmp = false;
 			extraTmp = "Could not find value tmp";
